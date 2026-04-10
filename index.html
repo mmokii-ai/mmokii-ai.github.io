@@ -3,225 +3,200 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>iSales Support — Демо виджета</title>
+<title>iSales Support — Демо</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #f0f2f5;
-    color: #1a1a2e;
-    min-height: 100vh;
-  }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f0f2f5; color: #1a1a2e; min-height: 100vh;
+}
 
-  /* ── Шапка ── */
-  .header {
-    background: #065A82;
-    color: white;
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  }
-  .header-logo {
-    width: 36px; height: 36px;
-    background: #1C7293;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; font-weight: 700;
-  }
-  .header h1 { font-size: 18px; font-weight: 600; }
-  .header p  { font-size: 13px; opacity: .75; margin-top: 2px; }
-  .badge {
-    margin-left: auto;
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.3);
-    padding: 4px 10px; border-radius: 20px; font-size: 12px;
-  }
+/* Шапка */
+.header {
+  background: #065A82; color: white;
+  padding: 14px 24px; display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.logo {
+  width: 34px; height: 34px; background: #1C7293; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700;
+}
+.header h1 { font-size: 17px; font-weight: 600; }
+.header p  { font-size: 12px; opacity: .7; margin-top: 1px; }
+.badge {
+  margin-left: auto; background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.3);
+  padding: 3px 10px; border-radius: 20px; font-size: 12px;
+}
 
-  /* ── Макет ── */
-  .demo-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    max-width: 1100px;
-    margin: 28px auto;
-    padding: 0 20px;
-  }
-  @media (max-width: 760px) { .demo-grid { grid-template-columns: 1fr; } }
+/* Сетка */
+.grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 20px; max-width: 1100px; margin: 24px auto; padding: 0 20px;
+}
+@media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
 
-  .panel {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    display: flex; flex-direction: column;
-    overflow: hidden; height: 600px;
-  }
+/* Панель */
+.panel {
+  background: white; border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  display: flex; flex-direction: column;
+  overflow: hidden; height: 620px;
+}
+.panel-head {
+  padding: 13px 16px; font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid #eee; flex-shrink: 0;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; }
+.dot.on { background: #27ae60; }
+.lbl {
+  font-size: 11px; font-weight: 500; letter-spacing: .5px;
+  text-transform: uppercase; opacity: .45; margin-left: auto;
+}
 
-  .panel-header {
-    padding: 14px 18px;
-    font-size: 14px; font-weight: 600;
-    display: flex; align-items: center; gap: 8px;
-    border-bottom: 1px solid #eee;
-  }
-  .panel-header .dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #ccc;
-  }
-  .panel-header .dot.online { background: #27ae60; }
+/* Сообщения */
+.msgs {
+  flex: 1; overflow-y: auto; padding: 14px;
+  display: flex; flex-direction: column; gap: 8px;
+  min-height: 0;
+}
+.msg {
+  max-width: 84%; padding: 9px 13px; border-radius: 12px;
+  font-size: 14px; line-height: 1.5; word-break: break-word;
+}
+.msg.bot     { background: #f0f4f8; align-self: flex-start; border-bottom-left-radius: 3px; }
+.msg.user    { background: #065A82; color: white; align-self: flex-end; border-bottom-right-radius: 3px; }
+.msg.support { background: #e8f8ef; border: 1px solid #b8e6cc; align-self: flex-start; border-bottom-left-radius: 3px; }
+.msg.system  { background: #fff8e6; color: #7a5c00; font-size: 12px; padding: 7px 12px; border-radius: 8px; align-self: center; text-align: center; max-width: 92%; }
+.msg-role    { font-size: 11px; font-weight: 600; opacity: .55; margin-bottom: 3px; }
+.msg-time    { font-size: 11px; opacity: .45; margin-top: 3px; }
 
-  .panel-label {
-    font-size: 11px; font-weight: 500; letter-spacing: .5px;
-    text-transform: uppercase; opacity: .5; margin-left: auto;
-  }
+/* Кнопки фидбека */
+.fbbtns { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.fbbtn  {
+  padding: 6px 13px; border-radius: 8px; border: 1px solid;
+  cursor: pointer; font-size: 13px; font-weight: 500; transition: all .15s;
+  background: white;
+}
+.fbbtn.yes { border-color: #27ae60; color: #27ae60; }
+.fbbtn.yes:hover { background: #27ae60; color: white; }
+.fbbtn.no  { border-color: #e74c3c; color: #e74c3c; }
+.fbbtn.no:hover  { background: #e74c3c; color: white; }
+.fbbtn.close { border-color: #888; color: #666; }
+.fbbtn.close:hover { background: #eee; }
 
-  /* ── Чат ── */
-  .chat-messages {
-    flex: 1; overflow-y: auto; padding: 16px;
-    display: flex; flex-direction: column; gap: 10px;
-  }
+/* Источник */
+.src { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 8px; margin-top: 3px; }
+.src.keyword { background: #e8f8ef; color: #27ae60; }
+.src.ai      { background: #e8f0fe; color: #065A82; }
 
-  .msg {
-    max-width: 82%; padding: 10px 14px;
-    border-radius: 12px; font-size: 14px; line-height: 1.5;
-    word-break: break-word; white-space: pre-wrap;
-  }
-  .msg.bot {
-    background: #f0f4f8; color: #1a1a2e;
-    border-bottom-left-radius: 4px; align-self: flex-start;
-  }
-  .msg.user {
-    background: #065A82; color: white;
-    border-bottom-right-radius: 4px; align-self: flex-end;
-  }
-  .msg.support {
-    background: #e8f8ef; color: #1a2e1a;
-    border: 1px solid #b8e6cc;
-    border-bottom-left-radius: 4px; align-self: flex-start;
-  }
-  .msg.system {
-    background: #fff8e6; color: #7a5c00;
-    font-size: 12px; padding: 7px 12px;
-    border-radius: 8px; align-self: center;
-    text-align: center; max-width: 90%;
-  }
-  .msg-time { font-size: 11px; opacity: .5; margin-top: 4px; }
-  .msg-role { font-size: 11px; font-weight: 600; opacity: .6; margin-bottom: 2px; }
+/* Ввод */
+.input-area {
+  padding: 10px 14px; border-top: 1px solid #eee;
+  display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0;
+}
+.chat-input {
+  flex: 1; border: 1px solid #dde3ea; border-radius: 10px;
+  padding: 9px 13px; font-size: 14px; resize: none;
+  font-family: inherit; outline: none; max-height: 100px; transition: border-color .15s;
+}
+.chat-input:focus { border-color: #065A82; }
+.chat-input:disabled { background: #f5f5f5; }
+.send-btn {
+  background: #065A82; color: white; border: none; border-radius: 10px;
+  padding: 9px 15px; cursor: pointer; font-size: 14px; font-weight: 600;
+  transition: background .15s; white-space: nowrap;
+}
+.send-btn:hover { background: #1C7293; }
+.send-btn:disabled { background: #aaa; cursor: not-allowed; }
 
-  /* Кнопки фидбека */
-  .feedback-btns {
-    display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;
-  }
-  .feedback-btn {
-    padding: 6px 14px; border-radius: 8px;
-    border: 1px solid; cursor: pointer;
-    font-size: 13px; font-weight: 500;
-    transition: all .15s;
-  }
-  .feedback-btn.yes { border-color: #27ae60; color: #27ae60; background: #f0faf4; }
-  .feedback-btn.yes:hover { background: #27ae60; color: white; }
-  .feedback-btn.no  { border-color: #e74c3c; color: #e74c3c; background: #fff5f5; }
-  .feedback-btn.no:hover  { background: #e74c3c; color: white; }
+/* ═══ ПАНЕЛЬ ПОДДЕРЖКИ ═══ */
 
-  /* ── Поле ввода ── */
-  .chat-input-area {
-    padding: 12px 16px;
-    border-top: 1px solid #eee;
-    display: flex; gap: 8px; align-items: flex-end;
-  }
-  .chat-input {
-    flex: 1; border: 1px solid #dde3ea; border-radius: 10px;
-    padding: 10px 14px; font-size: 14px; resize: none;
-    font-family: inherit; outline: none; max-height: 100px;
-    transition: border-color .15s;
-  }
-  .chat-input:focus { border-color: #065A82; }
-  .send-btn {
-    background: #065A82; color: white;
-    border: none; border-radius: 10px;
-    padding: 10px 16px; cursor: pointer;
-    font-size: 14px; font-weight: 600;
-    transition: background .15s; white-space: nowrap;
-  }
-  .send-btn:hover { background: #1C7293; }
-  .send-btn:disabled { background: #aaa; cursor: not-allowed; }
+/* Логин */
+.login-wrap {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 12px; padding: 24px;
+}
+.login-wrap p { font-size: 14px; color: #666; text-align: center; }
+.login-input {
+  width: 100%; border: 1px solid #dde3ea; border-radius: 10px;
+  padding: 9px 13px; font-size: 14px; outline: none;
+}
+.login-input:focus { border-color: #065A82; }
+.login-btn {
+  width: 100%; background: #065A82; color: white;
+  border: none; border-radius: 10px; padding: 10px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.login-err { color: #e74c3c; font-size: 13px; min-height: 18px; }
 
-  /* ── Панель поддержки — список тикетов ── */
-  .support-login {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 14px;
-    padding: 24px;
-  }
-  .support-login p { font-size: 14px; color: #666; text-align: center; }
-  .login-input {
-    width: 100%; border: 1px solid #dde3ea; border-radius: 10px;
-    padding: 10px 14px; font-size: 14px; outline: none;
-  }
-  .login-input:focus { border-color: #065A82; }
-  .login-btn {
-    width: 100%; background: #065A82; color: white;
-    border: none; border-radius: 10px; padding: 11px;
-    font-size: 14px; font-weight: 600; cursor: pointer;
-  }
-  .login-error { color: #e74c3c; font-size: 13px; }
+/* Основная панель после входа */
+.sup-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
 
-  .support-panel {
-    flex: 1; display: flex; flex-direction: column; overflow: hidden;
-  }
-  .tickets-sidebar {
-    border-bottom: 1px solid #eee;
-    max-height: 180px; overflow-y: auto; padding: 10px;
-  }
-  .ticket-item {
-    padding: 8px 10px; border-radius: 8px; cursor: pointer;
-    font-size: 13px; transition: background .1s;
-    border: 1px solid transparent;
-  }
-  .ticket-item:hover { background: #f5f7fa; }
-  .ticket-item.active { background: #e8f0fe; border-color: #065A82; }
-  .ticket-id { font-weight: 600; font-size: 12px; color: #065A82; }
-  .ticket-preview { color: #666; font-size: 12px; margin-top: 2px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ticket-badge {
-    display: inline-block; background: #e74c3c; color: white;
-    border-radius: 10px; padding: 1px 7px; font-size: 11px;
-    margin-left: 6px; vertical-align: middle;
-  }
-  .no-tickets {
-    text-align: center; color: #aaa; font-size: 13px;
-    padding: 20px; font-style: italic;
-  }
+/* Список тикетов */
+.tickets-bar {
+  border-bottom: 1px solid #eee; flex-shrink: 0;
+  max-height: 160px; overflow-y: auto;
+}
+.t-item {
+  padding: 8px 12px; cursor: pointer; font-size: 13px;
+  border-bottom: 1px solid #f0f0f0; transition: background .1s;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.t-item:hover { background: #f7f9fc; }
+.t-item.active { background: #e8f0fe; }
+.t-left { flex: 1; min-width: 0; }
+.t-id   { font-weight: 700; font-size: 12px; color: #065A82; }
+.t-prev { color: #777; font-size: 12px; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.t-badge {
+  font-size: 10px; padding: 2px 7px; border-radius: 10px;
+  white-space: nowrap; flex-shrink: 0; align-self: center;
+}
+.t-badge.waiting  { background: #fdecea; color: #c0392b; }
+.t-badge.replied  { background: #e8f8ef; color: #1e8449; }
+.t-badge.resolved { background: #eee;    color: #888; }
+.t-badge.new { background: #fff3cd; color: #856404; animation: pulse .8s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+.no-t { text-align: center; color: #bbb; font-size: 13px; padding: 18px; font-style: italic; }
 
-  /* Чат поддержки */
-  .support-chat { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
-  .support-chat-empty {
-    flex: 1; display: flex; align-items: center; justify-content: center;
-    color: #aaa; font-size: 14px; font-style: italic;
-  }
+/* Чат поддержки */
+.sup-chat { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.sup-empty {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  color: #bbb; font-size: 14px; font-style: italic;
+}
+.sup-msgs { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.sup-input-area {
+  padding: 10px 12px; border-top: 1px solid #eee;
+  display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0;
+}
+.close-btn {
+  background: #27ae60; color: white; border: none;
+  border-radius: 8px; padding: 7px 13px; font-size: 13px;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+}
+.close-btn:hover { background: #219a52; }
+.close-btn:disabled { background: #aaa; cursor: not-allowed; }
 
-  .typing { color: #aaa; font-size: 13px; font-style: italic; padding: 4px 16px; }
-
-  /* Источник ответа */
-  .source-badge {
-    display: inline-block; font-size: 11px; padding: 2px 8px;
-    border-radius: 10px; margin-top: 4px;
-  }
-  .source-badge.keyword { background: #e8f8ef; color: #27ae60; }
-  .source-badge.ai      { background: #e8f0fe; color: #065A82; }
-
-  .close-btn {
-    background: #27ae60; color: white; border: none;
-    border-radius: 8px; padding: 6px 14px; font-size: 13px;
-    cursor: pointer; margin-top: 8px;
-  }
-  .close-btn:hover { background: #219a52; }
+/* Статус тикета в заголовке чата поддержки */
+.sup-ticket-head {
+  padding: 8px 12px; background: #f7f9fc;
+  border-bottom: 1px solid #eee; font-size: 12px; color: #555;
+  flex-shrink: 0; display: flex; align-items: center; gap: 8px;
+}
+.sup-ticket-head strong { color: #065A82; }
+.status-label {
+  font-size: 11px; padding: 2px 7px; border-radius: 8px; margin-left: auto;
+}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-logo">iS</div>
+  <div class="logo">iS</div>
   <div>
     <h1>iSales Support</h1>
     <p>Демо-страница виджета поддержки</p>
@@ -229,59 +204,60 @@
   <span class="badge">Demo</span>
 </div>
 
-<div class="demo-grid">
+<div class="grid">
 
-  <!-- ══ ВИДЖЕТ ПОЛЬЗОВАТЕЛЯ ══ -->
-  <div class="panel" id="userPanel">
-    <div class="panel-header">
-      <div class="dot online" id="userDot"></div>
+  <!-- ═══ ВИДЖЕТ ПОЛЬЗОВАТЕЛЯ ═══ -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="dot on"></div>
       <span>Чат с поддержкой</span>
-      <span class="panel-label">Пользователь</span>
+      <span class="lbl">Пользователь</span>
     </div>
-    <div class="chat-messages" id="userMessages"></div>
-    <div class="chat-input-area">
-      <textarea class="chat-input" id="userInput"
-        placeholder="Напишите вопрос..." rows="1"
-        onkeydown="handleUserKey(event)"></textarea>
-      <button class="send-btn" id="userSendBtn" onclick="sendUserMessage()">
-        Отправить
-      </button>
+    <div class="msgs" id="uMsgs"></div>
+    <div class="input-area">
+      <textarea class="chat-input" id="uInput" placeholder="Напишите вопрос..." rows="1"
+        onkeydown="onUserKey(event)"></textarea>
+      <button class="send-btn" id="uBtn" onclick="sendUser()">Отправить</button>
     </div>
   </div>
 
-  <!-- ══ ВИДЖЕТ ПОДДЕРЖКИ ══ -->
-  <div class="panel" id="supportPanel">
-    <div class="panel-header">
-      <div class="dot" id="supportDot"></div>
+  <!-- ═══ ПАНЕЛЬ ПОДДЕРЖКИ ═══ -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="dot" id="sDot"></div>
       <span>Панель поддержки</span>
-      <span class="panel-label">Специалист</span>
+      <span class="lbl">Специалист</span>
     </div>
 
-    <!-- Форма входа -->
-    <div class="support-login" id="supportLogin">
+    <!-- Логин -->
+    <div class="login-wrap" id="sLogin">
       <p>Войдите как специалист поддержки</p>
-      <input class="login-input" type="password" id="supportPassword"
-        placeholder="Пароль" onkeydown="if(event.key==='Enter')supportLogin()">
-      <button class="login-btn" onclick="supportLogin()">Войти</button>
-      <span class="login-error" id="loginError"></span>
+      <input class="login-input" type="password" id="sPwd"
+        placeholder="Пароль" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="login-btn" onclick="doLogin()">Войти</button>
+      <span class="login-err" id="sErr"></span>
     </div>
 
     <!-- Панель после входа -->
-    <div class="support-panel" id="supportMain" style="display:none">
-      <div class="tickets-sidebar" id="ticketsList">
-        <div class="no-tickets" id="noTickets">Нет открытых тикетов</div>
+    <div class="sup-main" id="sMain" style="display:none">
+      <!-- Список тикетов -->
+      <div class="tickets-bar" id="tBar">
+        <div class="no-t" id="noT">Нет открытых тикетов</div>
       </div>
-      <div class="support-chat" id="supportChat">
-        <div class="support-chat-empty" id="supportChatEmpty">
-          Выберите тикет для ответа
+      <!-- Чат -->
+      <div class="sup-chat">
+        <div class="sup-empty" id="sEmpty">Выберите тикет</div>
+        <div id="sTicketHead" style="display:none" class="sup-ticket-head">
+          <span>Тикет <strong id="sHeadId"></strong></span>
+          <span>Пользователь: <strong id="sHeadUser"></strong></span>
+          <span class="status-label t-badge" id="sHeadStatus"></span>
         </div>
-        <div class="chat-messages" id="supportMessages" style="display:none"></div>
-        <div class="chat-input-area" id="supportInputArea" style="display:none">
-          <button class="close-btn" onclick="closeCurrentTicket()">Закрыть тикет</button>
-          <textarea class="chat-input" id="supportInput"
-            placeholder="Ответ пользователю..." rows="1"
-            onkeydown="handleSupportKey(event)"></textarea>
-          <button class="send-btn" onclick="sendSupportReply()">Ответить</button>
+        <div class="sup-msgs" id="sMsgs" style="display:none"></div>
+        <div class="sup-input-area" id="sInputArea" style="display:none">
+          <button class="close-btn" id="sCloseBtn" onclick="closeTicket()">Закрыть тикет</button>
+          <textarea class="chat-input" id="sInput" placeholder="Ответ пользователю..." rows="1"
+            onkeydown="onSupKey(event)"></textarea>
+          <button class="send-btn" id="sBtn" onclick="sendSupport()">Ответить</button>
         </div>
       </div>
     </div>
@@ -291,171 +267,232 @@
 
 <script>
 // ══════════════════════════════════════════════════════════════
-// КОНФИГ — замените URL на ваш Railway
+// КОНФИГ — замените на ваш Railway URL
 // ══════════════════════════════════════════════════════════════
-const API     = (window.BACKEND_URL || 'https://isales-bot-production.up.railway.app/').replace(/\/$/, '');
-const WS_BASE = API.replace(/^https/, 'wss').replace(/^http/, 'ws');
-
-// ══════════════════════════════════════════════════════════════
-// ГЛОБАЛЬНОЕ СОСТОЯНИЕ
-// ══════════════════════════════════════════════════════════════
-let userSessionId = null;
-let userWs        = null;
-let supportWs     = null;
-let activeTicketId = null;          // tid открытого тикета в панели поддержки
-const tickets = {};                  // { tid: { ticket_id, session_id, user_name, questions, messages[] } }
+const API = (window.BACKEND_URL || 'https://isales-bot-production.up.railway.app').replace(/\/$/, '');
+const WSB = API.replace(/^https/, 'wss').replace(/^http/, 'ws');
 
 // ══════════════════════════════════════════════════════════════
 // УТИЛИТЫ
 // ══════════════════════════════════════════════════════════════
 const $ = id => document.getElementById(id);
 const esc = t => String(t ?? '')
-  .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const timeNow = () =>
-  new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
-const scroll = el => { el.scrollTop = el.scrollHeight; };
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const hm = () => new Date().toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});
+const scrollBot = el => { el.scrollTop = el.scrollHeight; };
 
 // ══════════════════════════════════════════════════════════════
-// ВИДЖЕТ ПОЛЬЗОВАТЕЛЯ
+// СОСТОЯНИЕ ПОЛЬЗОВАТЕЛЯ
+// ══════════════════════════════════════════════════════════════
+let uSid = null;      // session_id пользователя
+let uWs  = null;      // WebSocket пользователя
+let uTicketId  = null; // текущий ticket_id
+let uResolved  = false; // пользователь уже подтвердил
+
+// ══════════════════════════════════════════════════════════════
+// СОСТОЯНИЕ ПОДДЕРЖКИ
+// ══════════════════════════════════════════════════════════════
+let sWs         = null;
+let activeTid   = null;             // активный тикет в панели
+const tickets   = {};               // { tid: {ticket_id,session_id,user_name,questions,state,messages[]} }
+
+// ══════════════════════════════════════════════════════════════
+// ПОЛЬЗОВАТЕЛЬ — ИНИЦИАЛИЗАЦИЯ
 // ══════════════════════════════════════════════════════════════
 
 async function initUser() {
   try {
     const r = await fetch(API + '/widget/session', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({user_name: 'Пользователь'})
     });
     const d = await r.json();
-    userSessionId = d.session_id;
-    userAppend('bot', d.greeting);
-    connectUserWs();
+    uSid = d.session_id;
+    uAppend('bot', d.greeting);
+    uConnectWs();
   } catch(e) {
-    userAppend('system', 'Не удалось подключиться к серверу. Проверьте URL в конфиге.');
-    console.error('initUser error:', e);
+    uAppend('system', 'Не удалось подключиться. Проверьте URL в конфиге.');
+    console.error('initUser:', e);
   }
 }
 
-function connectUserWs() {
-  if (!userSessionId) return;
-  try {
-    userWs = new WebSocket(WS_BASE + '/ws/user/' + userSessionId);
-    userWs.onopen    = () => console.log('User WS connected');
-    userWs.onclose   = () => setTimeout(connectUserWs, 3000);
-    userWs.onerror   = e => console.warn('User WS error', e);
-    userWs.onmessage = e => {
-      try {
-        const ev = JSON.parse(e.data);
-        console.log('User WS event:', ev);
-        if (ev.type === 'support_reply') {
-          userAppend('support', ev.text, ev.time);
-          showFeedback(ev.ticket_id);
-        } else if (ev.type === 'ticket_closed') {
-          userAppend('system', ev.text || 'Тикет закрыт специалистом.');
-        }
-      } catch(err) { console.error('User WS parse error', err); }
-    };
-  } catch(e) {
-    console.error('connectUserWs error:', e);
-    setTimeout(connectUserWs, 5000);
-  }
+function uConnectWs() {
+  if (!uSid) return;
+  uWs = new WebSocket(WSB + '/ws/user/' + uSid);
+  uWs.onopen  = () => console.log('User WS ok');
+  uWs.onclose = () => setTimeout(uConnectWs, 3000);
+  uWs.onerror = e => console.warn('User WS err', e);
+  uWs.onmessage = e => {
+    try {
+      const ev = JSON.parse(e.data);
+      console.log('User WS:', ev.type, ev);
+      if (ev.type === 'support_reply') {
+        uAppend('support', ev.text, ev.time, 'Специалист поддержки');
+        uShowFeedback(ev.ticket_id, false); // ещё раз показываем кнопки
+      } else if (ev.type === 'ticket_closed') {
+        uAppend('system', ev.text || 'Тикет закрыт.');
+        uSetResolved();
+      }
+    } catch(err) { console.error('User WS parse:', err); }
+  };
 }
 
-function userAppend(role, text, time) {
-  const box = $('userMessages');
+// ── Добавить сообщение в чат пользователя ──
+function uAppend(role, text, time, roleLabel) {
+  const box = $('uMsgs');
   const d   = document.createElement('div');
   d.className = 'msg ' + role;
-  const roleLabel = role === 'support'
-    ? '<div class="msg-role">Специалист поддержки</div>' : '';
-  d.innerHTML = roleLabel
-    + esc(text).replace(/\n/g, '<br>')
-    + '<div class="msg-time">' + (time || timeNow()) + '</div>';
+  const rl = roleLabel ? '<div class="msg-role">' + esc(roleLabel) + '</div>' : '';
+  d.innerHTML = rl + esc(text).replace(/\n/g,'<br>')
+    + '<div class="msg-time">' + (time || hm()) + '</div>';
   box.appendChild(d);
-  scroll(box);
+  scrollBot(box);
   return d;
 }
 
-function showFeedback(ticketId) {
-  const box = $('userMessages');
+// ── Показать кнопки фидбека ──
+function uShowFeedback(ticketId, isBot) {
+  // Удаляем старые кнопки фидбека если есть
+  const old = $('fb_' + ticketId);
+  if (old) old.remove();
+
+  const box = $('uMsgs');
   const d   = document.createElement('div');
   d.className = 'msg bot';
   d.id = 'fb_' + ticketId;
-  d.innerHTML = 'Помогло?'
-    + '<div class="feedback-btns">'
-    + '<button class="feedback-btn yes" onclick="sendFeedback(\''+ticketId+'\',true)">✅ Да, решено</button>'
-    + '<button class="feedback-btn no"  onclick="sendFeedback(\''+ticketId+'\',false)">❌ Не помогло</button>'
-    + '</div>';
+
+  if (isBot) {
+    // Ответ от бота — кнопки: Помогло / Не помогло / Закрыть
+    d.innerHTML = 'Помогло?'
+      + '<div class="fbbtns">'
+      + '<button class="fbbtn yes" onclick="uFeedback(\'' + ticketId + '\',true)">✅ Да, решено</button>'
+      + '<button class="fbbtn no"  onclick="uFeedback(\'' + ticketId + '\',false)">❌ Не помогло</button>'
+      + '<button class="fbbtn close" onclick="uClose(\'' + ticketId + '\')">✖ Закрыть</button>'
+      + '</div>';
+  } else {
+    // Ответ от специалиста — кнопки: Решено / Нужна ещё помощь / Закрыть
+    d.innerHTML = 'Вопрос решён?'
+      + '<div class="fbbtns">'
+      + '<button class="fbbtn yes" onclick="uFeedback(\'' + ticketId + '\',true)">✅ Да, решено</button>'
+      + '<button class="fbbtn no"  onclick="uFeedback(\'' + ticketId + '\',false)">❌ Нужна помощь</button>'
+      + '<button class="fbbtn close" onclick="uClose(\'' + ticketId + '\')">✖ Закрыть</button>'
+      + '</div>';
+  }
   box.appendChild(d);
-  scroll(box);
+  scrollBot(box);
 }
 
-async function sendFeedback(ticketId, resolved) {
+async function uFeedback(ticketId, resolved) {
   const fb = $('fb_' + ticketId);
   if (fb) fb.remove();
   try {
     const r = await fetch(API + '/widget/feedback', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({session_id: userSessionId, ticket_id: ticketId, resolved})
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({session_id: uSid, ticket_id: ticketId, resolved})
     });
     const d = await r.json();
-    userAppend('bot', d.reply);
+    uAppend('bot', d.reply);
+    if (resolved) {
+      uSetResolved();
+    }
+    // Если rejected — ждём ответа специалиста, ввод не блокируем
   } catch(e) {
-    userAppend('system', 'Ошибка отправки отзыва.');
+    uAppend('system', 'Ошибка. Попробуйте ещё раз.');
   }
 }
 
-async function sendUserMessage() {
-  const inp = $('userInput');
-  const btn = $('userSendBtn');
+async function uClose(ticketId) {
+  const fb = $('fb_' + ticketId);
+  if (fb) fb.remove();
+  try {
+    await fetch(API + '/widget/close', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({session_id: uSid, ticket_id: ticketId})
+    });
+    uAppend('system', 'Тикет закрыт. Если нужна помощь — напишите снова.');
+    uSetIdle();
+  } catch(e) {
+    uAppend('system', 'Ошибка закрытия.');
+  }
+}
+
+function uSetResolved() {
+  uResolved = true;
+  uTicketId = null;
+  $('uInput').disabled = false;
+  $('uBtn').disabled   = false;
+}
+
+function uSetIdle() {
+  uResolved = false;
+  uTicketId = null;
+  $('uInput').disabled = false;
+  $('uBtn').disabled   = false;
+}
+
+// ── Отправить сообщение ──
+async function sendUser() {
+  const inp  = $('uInput');
+  const btn  = $('uBtn');
   const text = inp.value.trim();
-  if (!text || !userSessionId) return;
+  if (!text || !uSid) return;
 
   inp.value = '';
   inp.style.height = 'auto';
-  userAppend('user', text);
   btn.disabled = true;
+  uAppend('user', text);
 
   try {
     const r = await fetch(API + '/widget/message', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({session_id: userSessionId, message: text, user_name: 'Пользователь'})
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({session_id: uSid, message: text, user_name: 'Пользователь'})
     });
     if (!r.ok) {
-      userAppend('system', 'Ошибка сервера: ' + r.status);
+      uAppend('system', 'Ошибка сервера: ' + r.status);
       return;
     }
     const d = await r.json();
-    userAppend('bot', d.reply);
-    if (d.source) {
-      const msgs = $('userMessages');
-      const last = msgs.lastElementChild;
-      if (last) {
-        const badge = document.createElement('div');
-        badge.className = 'source-badge ' + d.source;
-        badge.textContent = d.source === 'ai' ? 'AI' : 'База знаний';
-        last.appendChild(badge);
-      }
+    const msgEl = uAppend('bot', d.reply);
+
+    // Значок источника
+    if (d.source && d.source !== 'none') {
+      const badge = document.createElement('div');
+      badge.className = 'src ' + d.source;
+      badge.textContent = d.source === 'ai' ? 'AI' : 'База знаний';
+      msgEl.appendChild(badge);
     }
+
+    uTicketId = d.ticket_id || uTicketId;
+
     if (d.show_feedback && d.ticket_id) {
-      showFeedback(d.ticket_id);
+      uShowFeedback(d.ticket_id, true);
+    }
+
+    // Если эскалировали к специалисту — показываем кнопку закрыть
+    if (d.state === 'waiting_support') {
+      const box = $('uMsgs');
+      const cl  = document.createElement('div');
+      cl.className = 'msg bot';
+      cl.id = 'closebtn_' + d.ticket_id;
+      cl.innerHTML = '<div class="fbbtns"><button class="fbbtn close" onclick="uClose(\'' + d.ticket_id + '\')">✖ Закрыть тикет</button></div>';
+      box.appendChild(cl);
+      scrollBot(box);
     }
   } catch(e) {
-    userAppend('system', 'Нет соединения. Попробуйте ещё раз.');
-    console.error('sendUserMessage error:', e);
+    uAppend('system', 'Нет соединения. Попробуйте ещё раз.');
+    console.error('sendUser:', e);
   } finally {
     btn.disabled = false;
     inp.focus();
   }
 }
 
-function handleUserKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendUserMessage();
-  }
+function onUserKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendUser(); }
   setTimeout(() => {
     e.target.style.height = 'auto';
     e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
@@ -463,268 +500,340 @@ function handleUserKey(e) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// ПАНЕЛЬ ПОДДЕРЖКИ — ВХОД
+// ПОДДЕРЖКА — ЛОГИН
 // ══════════════════════════════════════════════════════════════
 
-async function supportLogin() {
-  const pwd = $('supportPassword').value.trim();
-  const err = $('loginError');
+async function doLogin() {
+  const pwd = $('sPwd').value.trim();
+  const err = $('sErr');
   err.textContent = '';
   if (!pwd) { err.textContent = 'Введите пароль'; return; }
-
   try {
     const r = await fetch(API + '/support/auth', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({password: pwd})
     });
     if (r.ok) {
-      $('supportLogin').style.display = 'none';
-      showSupportMain();
+      $('sLogin').style.display = 'none';
+      $('sMain').style.display  = 'flex';
+      $('sDot').classList.add('on');
+      sConnectWs();
+      sLoadTickets();
     } else {
       const d = await r.json().catch(() => ({}));
       err.textContent = d.error || 'Неверный пароль';
     }
   } catch(e) {
-    err.textContent = 'Ошибка соединения с сервером';
-    console.error('supportLogin error:', e);
+    err.textContent = 'Ошибка соединения';
+    console.error('doLogin:', e);
   }
 }
 
-function showSupportMain() {
-  const main = $('supportMain');
-  main.style.display       = 'flex';
-  main.style.flexDirection = 'column';
-  main.style.flex          = '1';
-  main.style.overflow      = 'hidden';
-  $('supportDot').classList.add('online');
-  connectSupportWs();
-  loadAllTickets();
-}
-
 // ══════════════════════════════════════════════════════════════
-// ПАНЕЛЬ ПОДДЕРЖКИ — WEBSOCKET
+// ПОДДЕРЖКА — WEBSOCKET
 // ══════════════════════════════════════════════════════════════
 
-function connectSupportWs() {
-  try {
-    supportWs = new WebSocket(WS_BASE + '/ws/support');
-    supportWs.onopen  = () => console.log('Support WS connected');
-    supportWs.onclose = () => setTimeout(connectSupportWs, 3000);
-    supportWs.onerror = e => console.warn('Support WS error', e);
-    supportWs.onmessage = e => {
-      try {
-        const ev = JSON.parse(e.data);
-        console.log('Support WS event:', ev.type, ev);
-        if (ev.type === 'init') {
-          (ev.tickets || []).forEach(saveTicket);
-          renderTicketList();
-        } else if (ev.type === 'new_ticket') {
-          saveTicket(ev);
-          renderTicketList();
-        } else if (ev.type === 'user_message') {
-          // Новое сообщение от пользователя в активный тикет
-          const tid = findTicketBySid(ev.session_id);
-          if (tid) {
-            tickets[tid].messages = tickets[tid].messages || [];
-            tickets[tid].messages.push({role:'user', text: ev.text, time: ev.time || timeNow()});
-            if (activeTicketId === tid) {
-              supportAppend('user', ev.text, ev.time, tickets[tid].user_name);
-            }
+function sConnectWs() {
+  sWs = new WebSocket(WSB + '/ws/support');
+  sWs.onopen  = () => console.log('Support WS ok');
+  sWs.onclose = () => setTimeout(sConnectWs, 3000);
+  sWs.onerror = e => console.warn('Support WS err', e);
+  sWs.onmessage = e => {
+    try {
+      const ev = JSON.parse(e.data);
+      console.log('Support WS:', ev.type, ev);
+
+      if (ev.type === 'init') {
+        (ev.tickets || []).forEach(sSaveTicket);
+        sRender();
+
+      } else if (ev.type === 'new_ticket') {
+        sSaveTicket(ev);
+        sRender();
+        sNotify('Новый тикет ' + ev.ticket_id);
+
+      } else if (ev.type === 'answer_rejected') {
+        // Пользователь отклонил ответ
+        const tid = ev.ticket_id;
+        if (tickets[tid]) {
+          tickets[tid].state = 'waiting_support';
+          // Добавляем системное сообщение в историю тикета
+          tickets[tid].messages = tickets[tid].messages || [];
+          tickets[tid].messages.push({role:'system', text: ev.message, time: hm()});
+          if (activeTid === tid) {
+            sAddMsg('system', ev.message);
+          }
+          sRender();
+        }
+        sNotify('❌ ' + (ev.user_name||'Пользователь') + ' отклонил ответ — ' + ev.ticket_id);
+
+      } else if (ev.type === 'ticket_resolved') {
+        // Пользователь подтвердил
+        const tid = ev.ticket_id;
+        if (tickets[tid]) {
+          tickets[tid].state = 'resolved';
+          tickets[tid].messages = tickets[tid].messages || [];
+          tickets[tid].messages.push({role:'system', text: ev.message, time: hm()});
+          if (activeTid === tid) {
+            sAddMsg('system', ev.message);
+            sUpdateHead(tid);
+            // Блокируем ввод, оставляем только "Закрыть тикет"
+            $('sInput').disabled = true;
+            $('sBtn').disabled   = true;
+          }
+          sRender();
+        }
+        sNotify('✅ ' + ev.ticket_id + ' — пользователь подтвердил решение');
+
+      } else if (ev.type === 'ticket_closed') {
+        // Тикет закрыт (нами или пользователем)
+        const tid = ev.ticket_id;
+        if (tickets[tid]) {
+          delete tickets[tid];
+        }
+        if (activeTid === tid) {
+          activeTid = null;
+          sShowEmpty();
+        }
+        sRender();
+
+      } else if (ev.type === 'ticket_closed_by_user') {
+        const tid = ev.ticket_id;
+        if (tickets[tid]) {
+          tickets[tid].messages = tickets[tid].messages || [];
+          tickets[tid].messages.push({role:'system', text: '🚫 Пользователь закрыл тикет', time: hm()});
+          tickets[tid].state = 'closed';
+        }
+        delete tickets[tid]; // убираем из обработки
+        if (activeTid === tid) {
+          activeTid = null;
+          sShowEmpty();
+        }
+        sRender();
+        sNotify('🚫 Пользователь закрыл тикет ' + tid);
+
+      } else if (ev.type === 'user_message') {
+        // Новое сообщение от пользователя в активный тикет
+        const tid = findTidBySid(ev.session_id);
+        if (tid) {
+          tickets[tid].messages = tickets[tid].messages || [];
+          tickets[tid].messages.push({role:'user', text: ev.text, time: ev.time || hm()});
+          if (activeTid === tid) {
+            sAddMsg('user', ev.text, ev.time, tickets[tid].user_name);
           }
         }
-      } catch(err) { console.error('Support WS parse:', err); }
-    };
-  } catch(e) {
-    console.error('connectSupportWs error:', e);
-    setTimeout(connectSupportWs, 5000);
-  }
+      }
+    } catch(err) { console.error('Support WS parse:', err); }
+  };
 }
 
 // ══════════════════════════════════════════════════════════════
-// ПАНЕЛЬ ПОДДЕРЖКИ — ТИКЕТЫ
+// ПОДДЕРЖКА — ТИКЕТЫ
 // ══════════════════════════════════════════════════════════════
 
-function saveTicket(t) {
+function sSaveTicket(t) {
   if (!t || !t.ticket_id) return;
   const tid = t.ticket_id;
-  // Нормализуем историю (бэкенд может отдавать chat_history или messages)
-  const history = t.messages || t.chat_history || [];
+  const msgs = t.messages || t.chat_history || [];
   tickets[tid] = {
     ticket_id:  tid,
-    session_id: t.session_id,
-    user_name:  t.user_name || 'Пользователь',
-    questions:  t.questions || [],
-    state:      t.state || 'open',
+    session_id: t.session_id || '',
+    user_name:  t.user_name  || 'Пользователь',
+    questions:  t.questions  || [],
+    state:      t.state      || 'waiting_support',
     created_at: t.created_at || '',
-    messages:   history,
+    messages:   msgs,
   };
-  console.log('Ticket saved:', tid, tickets[tid]);
 }
 
-function findTicketBySid(sessionId) {
-  return Object.keys(tickets).find(k => tickets[k].session_id === sessionId) || null;
+function findTidBySid(sid) {
+  return Object.keys(tickets).find(k => tickets[k].session_id === sid) || null;
 }
 
-async function loadAllTickets() {
+async function sLoadTickets() {
   try {
     const r = await fetch(API + '/support/tickets');
-    if (!r.ok) return;
     const d = await r.json();
-    (d.tickets || []).forEach(saveTicket);
-    renderTicketList();
-    console.log('Tickets loaded:', Object.keys(tickets).length);
-  } catch(e) {
-    console.error('loadAllTickets error:', e);
-  }
+    (d.tickets || []).forEach(sSaveTicket);
+    sRender();
+  } catch(e) { console.error('loadTickets:', e); }
 }
 
-function renderTicketList() {
-  const el   = $('ticketsList');
+function sRender() {
+  const bar  = $('tBar');
   const keys = Object.keys(tickets);
-  el.innerHTML = '';
+  bar.innerHTML = '';
 
   if (!keys.length) {
-    el.innerHTML = '<div class="no-tickets">Нет открытых тикетов</div>';
+    bar.innerHTML = '<div class="no-t">Нет открытых тикетов</div>';
     return;
   }
 
   keys.forEach(tid => {
     const t   = tickets[tid];
     const div = document.createElement('div');
-    div.className = 'ticket-item' + (activeTicketId === tid ? ' active' : '');
+    div.className = 'ticket-item t-item' + (activeTid === tid ? ' active' : '');
+    div.addEventListener('click', () => sOpenTicket(tid));
 
-    // ВАЖНО: onclick назначаем через addEventListener, не через innerHTML
-    div.addEventListener('click', () => openTicket(tid));
+    // Бейдж статуса
+    const stateMap = {
+      waiting_support: ['waiting',  'Ожидает'],
+      support_replied: ['replied',  'Отвечено'],
+      resolved:        ['resolved', 'Решено'],
+    };
+    const [cls, label] = stateMap[t.state] || ['waiting','Новый'];
 
     const lastQ = (t.questions || []).slice(-1)[0] || '—';
     div.innerHTML =
-      '<div class="ticket-id">' + esc(tid)
-      + '<span class="ticket-badge">' + esc(t.state) + '</span></div>'
-      + '<div class="ticket-preview">' + esc(t.user_name) + ': ' + esc(lastQ) + '</div>';
-    el.appendChild(div);
+      '<div class="t-left">'
+      + '<div class="t-id">' + esc(tid) + '</div>'
+      + '<div class="t-prev">' + esc(t.user_name) + ': ' + esc(lastQ) + '</div>'
+      + '</div>'
+      + '<span class="t-badge ' + cls + '">' + label + '</span>';
+    bar.appendChild(div);
   });
 }
 
-function openTicket(tid) {
-  console.log('openTicket called:', tid, tickets[tid]);
+function sOpenTicket(tid) {
   const t = tickets[tid];
-  if (!t) { console.error('Ticket not found:', tid); return; }
+  if (!t) return;
+  activeTid = tid;
+  sRender();
 
-  activeTicketId = tid;
-  renderTicketList(); // перерисует с active-классом
+  // Заголовок чата
+  $('sTicketHead').style.display = 'flex';
+  $('sHeadId').textContent   = tid;
+  $('sHeadUser').textContent = t.user_name;
+  sUpdateHead(tid);
 
   // Показываем чат
-  $('supportChatEmpty').style.display  = 'none';
-  $('supportMessages').style.display   = 'flex';
-  $('supportInputArea').style.display  = 'flex';
+  $('sEmpty').style.display     = 'none';
+  $('sMsgs').style.display      = 'flex';
+  $('sInputArea').style.display = 'flex';
 
   // Рисуем историю
-  const msgs = $('supportMessages');
+  const msgs = $('sMsgs');
   msgs.innerHTML = '';
 
   const history = t.messages || [];
-  if (history.length === 0) {
-    // Нет истории — показываем вопросы из questions
-    (t.questions || []).forEach(q => {
-      supportAppend('user', q, '', t.user_name, false);
-    });
+  if (!history.length) {
+    // Показываем вопросы пользователя
+    (t.questions || []).forEach(q => sAddMsg('user', q, '', t.user_name, false));
     if (!t.questions || !t.questions.length) {
-      const tip = document.createElement('div');
-      tip.className = 'msg system';
-      tip.textContent = 'История переписки недоступна. Ответьте пользователю ниже.';
-      msgs.appendChild(tip);
+      sAddMsg('system', 'История переписки недоступна.', '', '', false);
     }
   } else {
-    history.forEach(m => supportAppend(m.role, m.text, m.time, t.user_name, false));
+    history.forEach(m => sAddMsg(m.role, m.text, m.time, t.user_name, false));
   }
-  scroll(msgs);
-  $('supportInput').focus();
+  scrollBot(msgs);
+
+  // Блокировка ввода если тикет решён
+  const resolved = t.state === 'resolved';
+  $('sInput').disabled = resolved;
+  $('sBtn').disabled   = resolved;
+  $('sInput').focus();
 }
 
-function supportAppend(role, text, time, userName, doScroll) {
+function sUpdateHead(tid) {
+  const t = tickets[tid];
+  if (!t) return;
+  const stateMap = {
+    waiting_support: ['waiting',  'Ожидает ответа'],
+    support_replied: ['replied',  'Отвечено'],
+    resolved:        ['resolved', 'Решено пользователем'],
+  };
+  const [cls, label] = stateMap[t.state] || ['waiting','Открыт'];
+  const el = $('sHeadStatus');
+  el.className = 'status-label t-badge ' + cls;
+  el.textContent = label;
+}
+
+function sShowEmpty() {
+  $('sEmpty').style.display     = 'flex';
+  $('sMsgs').style.display      = 'none';
+  $('sInputArea').style.display = 'none';
+  $('sTicketHead').style.display = 'none';
+  $('sMsgs').innerHTML = '';
+}
+
+// ── Добавить сообщение в чат поддержки ──
+function sAddMsg(role, text, time, userName, doScroll) {
   if (doScroll === undefined) doScroll = true;
-  const msgs = $('supportMessages');
-  if (!msgs) return;
+  const msgs = $('sMsgs');
+  if (!msgs || msgs.style.display === 'none') return;
   const d = document.createElement('div');
-  // user → выглядит как "бот" (чужое сообщение слева)
-  // support → выглядит как "наше" сообщение справа
-  d.className = 'msg ' + (role === 'support' ? 'user' : role === 'user' ? 'bot' : 'system');
-  const label = role === 'user'
+  // user (пользователь) → слева как "bot"
+  // support (специалист) → справа как "user"
+  d.className = 'msg ' + (role==='support' ? 'user' : role==='user' ? 'bot' : 'system');
+  const rl = role === 'user'
     ? '<div class="msg-role">' + esc(userName || 'Пользователь') + '</div>'
     : role === 'support'
       ? '<div class="msg-role">Вы</div>'
       : '';
-  d.innerHTML = label
-    + esc(text).replace(/\n/g, '<br>')
-    + '<div class="msg-time">' + (time || timeNow()) + '</div>';
+  d.innerHTML = rl + esc(text).replace(/\n/g,'<br>')
+    + '<div class="msg-time">' + (time || hm()) + '</div>';
   msgs.appendChild(d);
-  if (doScroll) scroll(msgs);
+  if (doScroll) scrollBot(msgs);
 }
 
-async function sendSupportReply() {
-  const inp  = $('supportInput');
+// ── Отправить ответ ──
+async function sendSupport() {
+  const inp  = $('sInput');
   const text = inp.value.trim();
-  if (!text) return;
-  if (!activeTicketId) { alert('Выберите тикет'); return; }
+  if (!text || !activeTid) return;
 
-  const t = tickets[activeTicketId];
-  if (!t) { console.error('No active ticket'); return; }
+  const t = tickets[activeTid];
+  if (!t) return;
 
   inp.value = '';
-  supportAppend('support', text, timeNow(), '', true);
+  sAddMsg('support', text);
 
   try {
     const r = await fetch(API + '/support/reply', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        ticket_id:  activeTicketId,
-        session_id: t.session_id,
-        message:    text,
-      })
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ticket_id: activeTid, session_id: t.session_id, message: text})
     });
     if (!r.ok) {
-      console.error('reply error:', r.status, await r.text());
-      supportAppend('system', 'Ошибка отправки: ' + r.status);
+      sAddMsg('system', 'Ошибка отправки: ' + r.status);
       return;
     }
-    // Сохраняем в локальную историю
     t.messages = t.messages || [];
-    t.messages.push({role: 'support', text, time: timeNow()});
-    console.log('Reply sent OK');
+    t.messages.push({role:'support', text, time: hm()});
+    t.state = 'support_replied';
+    sRender();
+    sUpdateHead(activeTid);
   } catch(e) {
-    supportAppend('system', 'Нет соединения с сервером.');
-    console.error('sendSupportReply error:', e);
+    sAddMsg('system', 'Нет соединения.');
+    console.error('sendSupport:', e);
   }
 }
 
-function handleSupportKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendSupportReply();
+async function closeTicket() {
+  if (!activeTid) return;
+  const tid = activeTid;
+  try {
+    await fetch(API + '/support/close/' + tid, {method:'POST'});
+    // WS событие ticket_closed придёт и уберёт тикет
+  } catch(e) {
+    console.error('closeTicket:', e);
   }
+}
+
+function onSupKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSupport(); }
   setTimeout(() => {
     e.target.style.height = 'auto';
     e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
   }, 0);
 }
 
-async function closeCurrentTicket() {
-  if (!activeTicketId) return;
-  const tid = activeTicketId;
-  try {
-    await fetch(API + '/support/close/' + tid, {method: 'POST'});
-    delete tickets[tid];
-    activeTicketId = null;
-    renderTicketList();
-    $('supportChatEmpty').style.display  = 'flex';
-    $('supportMessages').style.display   = 'none';
-    $('supportInputArea').style.display  = 'none';
-    $('supportMessages').innerHTML = '';
-  } catch(e) {
-    console.error('closeCurrentTicket error:', e);
+function sNotify(msg) {
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    new Notification('iSales Support', {body: msg, icon: ''});
   }
+  console.log('Support notify:', msg);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -739,3 +848,5 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
+
