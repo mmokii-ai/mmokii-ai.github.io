@@ -267,7 +267,7 @@
     </div>
 
     <!-- Панель после входа -->
-    <div class="support-panel" id="supportMain" style="display:none;flex-direction:column">
+    <div class="support-panel" id="supportMain" style="display:none">
       <div class="tickets-sidebar" id="ticketsList">
         <div class="no-tickets" id="noTickets">Нет открытых тикетов</div>
       </div>
@@ -290,139 +290,164 @@
 </div>
 
 <script>
-// ── Конфиг ────────────────────────────────────────────────────
-// ЗАМЕНИТЕ на URL вашего Railway-проекта:
-const API = (window.BACKEND_URL || 'https://YOUR-RAILWAY-URL.up.railway.app').replace(/\/$/, '');
+// ══════════════════════════════════════════════════════════════
+// КОНФИГ — замените URL на ваш Railway
+// ══════════════════════════════════════════════════════════════
+const API     = (window.BACKEND_URL || 'https://YOUR-RAILWAY-URL.up.railway.app').replace(/\/$/, '');
 const WS_BASE = API.replace(/^https/, 'wss').replace(/^http/, 'ws');
 
-// ── Состояние ─────────────────────────────────────────────────
-let userSessionId  = null;
-let userWs         = null;
-let supportWs      = null;
-let currentTicket  = null;  // { ticket_id, session_id }
-let tickets        = {};    // { ticket_id: { session_id, messages[], ... } }
-let pendingFeedback = null; // { ticket_id } — ждём фидбек
+// ══════════════════════════════════════════════════════════════
+// ГЛОБАЛЬНОЕ СОСТОЯНИЕ
+// ══════════════════════════════════════════════════════════════
+let userSessionId = null;
+let userWs        = null;
+let supportWs     = null;
+let activeTicketId = null;          // tid открытого тикета в панели поддержки
+const tickets = {};                  // { tid: { ticket_id, session_id, user_name, questions, messages[] } }
 
-// ── Утилиты ───────────────────────────────────────────────────
-function esc(t) {
-  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+// ══════════════════════════════════════════════════════════════
+// УТИЛИТЫ
+// ══════════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const esc = t => String(t ?? '')
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const timeNow = () =>
+  new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+const scroll = el => { el.scrollTop = el.scrollHeight; };
 
-function scrollBottom(el) {
-  el.scrollTop = el.scrollHeight;
-}
+// ══════════════════════════════════════════════════════════════
+// ВИДЖЕТ ПОЛЬЗОВАТЕЛЯ
+// ══════════════════════════════════════════════════════════════
 
-function now() {
-  return new Date().toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'});
-}
-
-// ── ПОЛЬЗОВАТЕЛЬСКИЙ ВИДЖЕТ ───────────────────────────────────
-
-async function initUserWidget() {
-  const res = await fetch(`${API}/widget/session`, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({user_name: 'Пользователь'})
-  });
-  const data = await res.json();
-  userSessionId = data.session_id;
-
-  addUserMsg('bot', data.greeting);
-  connectUserWs();
+async function initUser() {
+  try {
+    const r = await fetch(API + '/widget/session', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({user_name: 'Пользователь'})
+    });
+    const d = await r.json();
+    userSessionId = d.session_id;
+    userAppend('bot', d.greeting);
+    connectUserWs();
+  } catch(e) {
+    userAppend('system', 'Не удалось подключиться к серверу. Проверьте URL в конфиге.');
+    console.error('initUser error:', e);
+  }
 }
 
 function connectUserWs() {
-  userWs = new WebSocket(`${WS_BASE}/ws/user/${userSessionId}`);
-  userWs.onmessage = e => {
-    const ev = JSON.parse(e.data);
-    if (ev.type === 'support_reply') {
-      addUserMsg('support', ev.text, ev.time);
-      addUserMsg('bot', '💬 Специалист ответил. Помогло?');
-      addFeedback(ev.ticket_id);
-    } else if (ev.type === 'ticket_closed') {
-      addUserMsg('system', ev.text);
-    }
-  };
-  userWs.onclose = () => setTimeout(connectUserWs, 3000);
+  if (!userSessionId) return;
+  try {
+    userWs = new WebSocket(WS_BASE + '/ws/user/' + userSessionId);
+    userWs.onopen    = () => console.log('User WS connected');
+    userWs.onclose   = () => setTimeout(connectUserWs, 3000);
+    userWs.onerror   = e => console.warn('User WS error', e);
+    userWs.onmessage = e => {
+      try {
+        const ev = JSON.parse(e.data);
+        console.log('User WS event:', ev);
+        if (ev.type === 'support_reply') {
+          userAppend('support', ev.text, ev.time);
+          showFeedback(ev.ticket_id);
+        } else if (ev.type === 'ticket_closed') {
+          userAppend('system', ev.text || 'Тикет закрыт специалистом.');
+        }
+      } catch(err) { console.error('User WS parse error', err); }
+    };
+  } catch(e) {
+    console.error('connectUserWs error:', e);
+    setTimeout(connectUserWs, 5000);
+  }
 }
 
-function addUserMsg(role, text, time) {
-  const el = document.getElementById('userMessages');
-  const div = document.createElement('div');
-  div.className = `msg ${role}`;
-  const roleLabel = role === 'support' ? '<div class="msg-role">Специалист поддержки</div>' : '';
-  div.innerHTML = `${roleLabel}${esc(text).replace(/\n/g,'<br>')}
-    <div class="msg-time">${time || now()}</div>`;
-  el.appendChild(div);
-  scrollBottom(el);
+function userAppend(role, text, time) {
+  const box = $('userMessages');
+  const d   = document.createElement('div');
+  d.className = 'msg ' + role;
+  const roleLabel = role === 'support'
+    ? '<div class="msg-role">Специалист поддержки</div>' : '';
+  d.innerHTML = roleLabel
+    + esc(text).replace(/\n/g, '<br>')
+    + '<div class="msg-time">' + (time || timeNow()) + '</div>';
+  box.appendChild(d);
+  scroll(box);
+  return d;
 }
 
-function addFeedback(ticketId) {
-  const el = document.getElementById('userMessages');
-  const div = document.createElement('div');
-  div.className = 'msg bot';
-  div.id = `feedback-${ticketId}`;
-  div.innerHTML = `Помогло?
-    <div class="feedback-btns">
-      <button class="feedback-btn yes" onclick="sendFeedback('${ticketId}',true)">✅ Да, решено</button>
-      <button class="feedback-btn no"  onclick="sendFeedback('${ticketId}',false)">❌ Не помогло</button>
-    </div>`;
-  el.appendChild(div);
-  scrollBottom(el);
+function showFeedback(ticketId) {
+  const box = $('userMessages');
+  const d   = document.createElement('div');
+  d.className = 'msg bot';
+  d.id = 'fb_' + ticketId;
+  d.innerHTML = 'Помогло?'
+    + '<div class="feedback-btns">'
+    + '<button class="feedback-btn yes" onclick="sendFeedback(\''+ticketId+'\',true)">✅ Да, решено</button>'
+    + '<button class="feedback-btn no"  onclick="sendFeedback(\''+ticketId+'\',false)">❌ Не помогло</button>'
+    + '</div>';
+  box.appendChild(d);
+  scroll(box);
 }
 
 async function sendFeedback(ticketId, resolved) {
-  const fb = document.getElementById(`feedback-${ticketId}`);
+  const fb = $('fb_' + ticketId);
   if (fb) fb.remove();
-  const res = await fetch(`${API}/widget/feedback`, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({session_id: userSessionId, ticket_id: ticketId, resolved})
-  });
-  const data = await res.json();
-  addUserMsg('bot', data.reply);
+  try {
+    const r = await fetch(API + '/widget/feedback', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({session_id: userSessionId, ticket_id: ticketId, resolved})
+    });
+    const d = await r.json();
+    userAppend('bot', d.reply);
+  } catch(e) {
+    userAppend('system', 'Ошибка отправки отзыва.');
+  }
 }
 
 async function sendUserMessage() {
-  const input = document.getElementById('userInput');
-  const text  = input.value.trim();
+  const inp = $('userInput');
+  const btn = $('userSendBtn');
+  const text = inp.value.trim();
   if (!text || !userSessionId) return;
 
-  input.value = '';
-  input.style.height = 'auto';
-  addUserMsg('user', text);
-
-  const btn = document.getElementById('userSendBtn');
+  inp.value = '';
+  inp.style.height = 'auto';
+  userAppend('user', text);
   btn.disabled = true;
 
   try {
-    const res = await fetch(`${API}/widget/message`, {
+    const r = await fetch(API + '/widget/message', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({session_id: userSessionId, message: text, user_name: 'Пользователь'})
     });
-    const data = await res.json();
-
-    addUserMsg('bot', data.reply);
-
-    if (data.source) {
-      const el = document.getElementById('userMessages');
-      const last = el.lastElementChild;
-      const badge = document.createElement('div');
-      badge.className = `source-badge ${data.source}`;
-      badge.textContent = data.source === 'ai' ? 'AI' : 'База знаний';
-      last.appendChild(badge);
+    if (!r.ok) {
+      userAppend('system', 'Ошибка сервера: ' + r.status);
+      return;
     }
-
-    if (data.show_feedback && data.ticket_id) {
-      addFeedback(data.ticket_id);
+    const d = await r.json();
+    userAppend('bot', d.reply);
+    if (d.source) {
+      const msgs = $('userMessages');
+      const last = msgs.lastElementChild;
+      if (last) {
+        const badge = document.createElement('div');
+        badge.className = 'source-badge ' + d.source;
+        badge.textContent = d.source === 'ai' ? 'AI' : 'База знаний';
+        last.appendChild(badge);
+      }
+    }
+    if (d.show_feedback && d.ticket_id) {
+      showFeedback(d.ticket_id);
     }
   } catch(e) {
-    addUserMsg('system', 'Ошибка соединения. Попробуйте ещё раз.');
+    userAppend('system', 'Нет соединения. Попробуйте ещё раз.');
+    console.error('sendUserMessage error:', e);
   } finally {
     btn.disabled = false;
-    input.focus();
+    inp.focus();
   }
 }
 
@@ -431,189 +456,247 @@ function handleUserKey(e) {
     e.preventDefault();
     sendUserMessage();
   }
-  // Авто-resize textarea
   setTimeout(() => {
     e.target.style.height = 'auto';
     e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
   }, 0);
 }
 
-// ── ПАНЕЛЬ ПОДДЕРЖКИ ──────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// ПАНЕЛЬ ПОДДЕРЖКИ — ВХОД
+// ══════════════════════════════════════════════════════════════
 
 async function supportLogin() {
-  const pwd = document.getElementById('supportPassword').value;
-  const err = document.getElementById('loginError');
+  const pwd = $('supportPassword').value.trim();
+  const err = $('loginError');
   err.textContent = '';
+  if (!pwd) { err.textContent = 'Введите пароль'; return; }
+
   try {
-    const res = await fetch(`${API}/support/auth`, {
+    const r = await fetch(API + '/support/auth', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({password: pwd})
     });
-    if (res.ok) {
-      document.getElementById('supportLogin').style.display = 'none';
-      document.getElementById('supportMain').style.display  = 'flex';
-      document.getElementById('supportMain').style.flexDirection = 'column';
-      document.getElementById('supportDot').classList.add('online');
-      connectSupportWs();
-      loadTickets();
+    if (r.ok) {
+      $('supportLogin').style.display = 'none';
+      showSupportMain();
     } else {
-      err.textContent = 'Неверный пароль';
+      const d = await r.json().catch(() => ({}));
+      err.textContent = d.error || 'Неверный пароль';
     }
   } catch(e) {
-    err.textContent = 'Ошибка соединения';
+    err.textContent = 'Ошибка соединения с сервером';
+    console.error('supportLogin error:', e);
   }
 }
+
+function showSupportMain() {
+  const main = $('supportMain');
+  main.style.display       = 'flex';
+  main.style.flexDirection = 'column';
+  main.style.flex          = '1';
+  main.style.overflow      = 'hidden';
+  $('supportDot').classList.add('online');
+  connectSupportWs();
+  loadAllTickets();
+}
+
+// ══════════════════════════════════════════════════════════════
+// ПАНЕЛЬ ПОДДЕРЖКИ — WEBSOCKET
+// ══════════════════════════════════════════════════════════════
 
 function connectSupportWs() {
-  supportWs = new WebSocket(`${WS_BASE}/ws/support`);
-  supportWs.onmessage = e => {
-    const ev = JSON.parse(e.data);
-    if (ev.type === 'init') {
-      ev.tickets.forEach(t => registerTicket(t));
-    } else if (ev.type === 'new_ticket') {
-      registerTicket(ev);
-      showSupportNotification(ev);
-    } else if (ev.type === 'user_message') {
-      appendToTicket(ev.session_id, 'user', ev.text, ev.time);
-    }
-  };
-  supportWs.onclose = () => setTimeout(connectSupportWs, 3000);
-}
-
-async function loadTickets() {
   try {
-    const res  = await fetch(`${API}/support/tickets`);
-    const data = await res.json();
-    data.tickets.forEach(t => registerTicket(t));
-  } catch(e) { console.error(e); }
+    supportWs = new WebSocket(WS_BASE + '/ws/support');
+    supportWs.onopen  = () => console.log('Support WS connected');
+    supportWs.onclose = () => setTimeout(connectSupportWs, 3000);
+    supportWs.onerror = e => console.warn('Support WS error', e);
+    supportWs.onmessage = e => {
+      try {
+        const ev = JSON.parse(e.data);
+        console.log('Support WS event:', ev.type, ev);
+        if (ev.type === 'init') {
+          (ev.tickets || []).forEach(saveTicket);
+          renderTicketList();
+        } else if (ev.type === 'new_ticket') {
+          saveTicket(ev);
+          renderTicketList();
+        } else if (ev.type === 'user_message') {
+          // Новое сообщение от пользователя в активный тикет
+          const tid = findTicketBySid(ev.session_id);
+          if (tid) {
+            tickets[tid].messages = tickets[tid].messages || [];
+            tickets[tid].messages.push({role:'user', text: ev.text, time: ev.time || timeNow()});
+            if (activeTicketId === tid) {
+              supportAppend('user', ev.text, ev.time, tickets[tid].user_name);
+            }
+          }
+        }
+      } catch(err) { console.error('Support WS parse:', err); }
+    };
+  } catch(e) {
+    console.error('connectSupportWs error:', e);
+    setTimeout(connectSupportWs, 5000);
+  }
 }
 
-function registerTicket(t) {
+// ══════════════════════════════════════════════════════════════
+// ПАНЕЛЬ ПОДДЕРЖКИ — ТИКЕТЫ
+// ══════════════════════════════════════════════════════════════
+
+function saveTicket(t) {
+  if (!t || !t.ticket_id) return;
   const tid = t.ticket_id;
-  if (!tid) return;
-  // Нормализуем: бэкенд может отдавать chat_history или messages
-  if (t.chat_history && !t.messages) t.messages = t.chat_history;
-  if (!t.messages) t.messages = [];
-  // Если тикет уже есть — мержим сообщения, не затираем
-  if (tickets[tid]) {
-    tickets[tid] = { ...tickets[tid], ...t };
-  } else {
-    tickets[tid] = t;
-  }
-  renderTicketsList();
+  // Нормализуем историю (бэкенд может отдавать chat_history или messages)
+  const history = t.messages || t.chat_history || [];
+  tickets[tid] = {
+    ticket_id:  tid,
+    session_id: t.session_id,
+    user_name:  t.user_name || 'Пользователь',
+    questions:  t.questions || [],
+    state:      t.state || 'open',
+    created_at: t.created_at || '',
+    messages:   history,
+  };
+  console.log('Ticket saved:', tid, tickets[tid]);
 }
 
-function appendToTicket(sessionId, role, text, time) {
-  // Найти тикет по session_id
-  const tid = Object.keys(tickets).find(k => tickets[k].session_id === sessionId);
-  if (!tid) return;
-  tickets[tid].messages = tickets[tid].messages || [];
-  tickets[tid].messages.push({role, text, time: time || now()});
-  if (currentTicket && currentTicket.ticket_id === tid) {
-    addSupportMsg(role, text, time);
-  }
-  renderTicketsList();
+function findTicketBySid(sessionId) {
+  return Object.keys(tickets).find(k => tickets[k].session_id === sessionId) || null;
 }
 
-function renderTicketsList() {
-  const el   = document.getElementById('ticketsList');
-  const none = document.getElementById('noTickets');
+async function loadAllTickets() {
+  try {
+    const r = await fetch(API + '/support/tickets');
+    if (!r.ok) return;
+    const d = await r.json();
+    (d.tickets || []).forEach(saveTicket);
+    renderTicketList();
+    console.log('Tickets loaded:', Object.keys(tickets).length);
+  } catch(e) {
+    console.error('loadAllTickets error:', e);
+  }
+}
+
+function renderTicketList() {
+  const el   = $('ticketsList');
   const keys = Object.keys(tickets);
+  el.innerHTML = '';
+
   if (!keys.length) {
-    none.style.display = 'block';
-    el.innerHTML = '';
-    el.appendChild(none);
+    el.innerHTML = '<div class="no-tickets">Нет открытых тикетов</div>';
     return;
   }
-  none.style.display = 'none';
-  el.innerHTML = '';
+
   keys.forEach(tid => {
     const t   = tickets[tid];
     const div = document.createElement('div');
-    div.className = `ticket-item${currentTicket?.ticket_id === tid ? ' active' : ''}`;
-    div.onclick = () => openTicket(tid);
+    div.className = 'ticket-item' + (activeTicketId === tid ? ' active' : '');
+
+    // ВАЖНО: onclick назначаем через addEventListener, не через innerHTML
+    div.addEventListener('click', () => openTicket(tid));
+
     const lastQ = (t.questions || []).slice(-1)[0] || '—';
-    div.innerHTML = `<div class="ticket-id">${esc(tid)}<span class="ticket-badge">${esc(t.state||'open')}</span></div>
-      <div class="ticket-preview">${esc(t.user_name || 'Пользователь')}: ${esc(lastQ)}</div>`;
+    div.innerHTML =
+      '<div class="ticket-id">' + esc(tid)
+      + '<span class="ticket-badge">' + esc(t.state) + '</span></div>'
+      + '<div class="ticket-preview">' + esc(t.user_name) + ': ' + esc(lastQ) + '</div>';
     el.appendChild(div);
   });
 }
 
 function openTicket(tid) {
-  currentTicket = tickets[tid];
-  renderTicketsList();
+  console.log('openTicket called:', tid, tickets[tid]);
+  const t = tickets[tid];
+  if (!t) { console.error('Ticket not found:', tid); return; }
 
-  const empty = document.getElementById('supportChatEmpty');
-  const msgs  = document.getElementById('supportMessages');
-  const area  = document.getElementById('supportInputArea');
+  activeTicketId = tid;
+  renderTicketList(); // перерисует с active-классом
 
-  empty.style.display = 'none';
-  msgs.style.display  = 'flex';
-  area.style.display  = 'flex';
+  // Показываем чат
+  $('supportChatEmpty').style.display  = 'none';
+  $('supportMessages').style.display   = 'flex';
+  $('supportInputArea').style.display  = 'flex';
+
+  // Рисуем историю
+  const msgs = $('supportMessages');
   msgs.innerHTML = '';
 
-  // Показываем историю (нормализуем оба варианта поля)
-  const history = currentTicket.messages || currentTicket.chat_history || [];
-  if (!history.length) {
-    // Если история пустая — показываем вопросы пользователя
-    (currentTicket.questions || []).forEach(q => {
-      addSupportMsg('user', q, currentTicket.created_at ? new Date(currentTicket.created_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}) : '', false);
+  const history = t.messages || [];
+  if (history.length === 0) {
+    // Нет истории — показываем вопросы из questions
+    (t.questions || []).forEach(q => {
+      supportAppend('user', q, '', t.user_name, false);
     });
+    if (!t.questions || !t.questions.length) {
+      const tip = document.createElement('div');
+      tip.className = 'msg system';
+      tip.textContent = 'История переписки недоступна. Ответьте пользователю ниже.';
+      msgs.appendChild(tip);
+    }
   } else {
-    history.forEach(m => addSupportMsg(m.role, m.text, m.time, false));
+    history.forEach(m => supportAppend(m.role, m.text, m.time, t.user_name, false));
   }
-  scrollBottom(msgs);
+  scroll(msgs);
+  $('supportInput').focus();
 }
 
-function addSupportMsg(role, text, time, scroll=true) {
-  const el  = document.getElementById('supportMessages');
-  const div = document.createElement('div');
-  div.className = `msg ${role === 'user' ? 'bot' : role === 'support' ? 'user' : 'system'}`;
+function supportAppend(role, text, time, userName, doScroll) {
+  if (doScroll === undefined) doScroll = true;
+  const msgs = $('supportMessages');
+  if (!msgs) return;
+  const d = document.createElement('div');
+  // user → выглядит как "бот" (чужое сообщение слева)
+  // support → выглядит как "наше" сообщение справа
+  d.className = 'msg ' + (role === 'support' ? 'user' : role === 'user' ? 'bot' : 'system');
   const label = role === 'user'
-    ? `<div class="msg-role">${esc(currentTicket?.user_name||'Пользователь')}</div>`
-    : role === 'support' ? '<div class="msg-role">Вы</div>' : '';
-  div.innerHTML = `${label}${esc(text).replace(/\n/g,'<br>')}
-    <div class="msg-time">${time || now()}</div>`;
-  el.appendChild(div);
-  if (scroll) scrollBottom(el);
+    ? '<div class="msg-role">' + esc(userName || 'Пользователь') + '</div>'
+    : role === 'support'
+      ? '<div class="msg-role">Вы</div>'
+      : '';
+  d.innerHTML = label
+    + esc(text).replace(/\n/g, '<br>')
+    + '<div class="msg-time">' + (time || timeNow()) + '</div>';
+  msgs.appendChild(d);
+  if (doScroll) scroll(msgs);
 }
 
 async function sendSupportReply() {
-  const input = document.getElementById('supportInput');
-  const text  = input.value.trim();
-  if (!text || !currentTicket) return;
-  input.value = '';
+  const inp  = $('supportInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  if (!activeTicketId) { alert('Выберите тикет'); return; }
 
-  addSupportMsg('support', text);
+  const t = tickets[activeTicketId];
+  if (!t) { console.error('No active ticket'); return; }
+
+  inp.value = '';
+  supportAppend('support', text, timeNow(), '', true);
 
   try {
-    await fetch(`${API}/support/reply`, {
+    const r = await fetch(API + '/support/reply', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
-        ticket_id:  currentTicket.ticket_id,
-        session_id: currentTicket.session_id,
+        ticket_id:  activeTicketId,
+        session_id: t.session_id,
         message:    text,
       })
     });
-    currentTicket.messages = currentTicket.messages || [];
-    currentTicket.messages.push({role:'support', text, time: now()});
+    if (!r.ok) {
+      console.error('reply error:', r.status, await r.text());
+      supportAppend('system', 'Ошибка отправки: ' + r.status);
+      return;
+    }
+    // Сохраняем в локальную историю
+    t.messages = t.messages || [];
+    t.messages.push({role: 'support', text, time: timeNow()});
+    console.log('Reply sent OK');
   } catch(e) {
-    addSupportMsg('system', 'Ошибка отправки');
+    supportAppend('system', 'Нет соединения с сервером.');
+    console.error('sendSupportReply error:', e);
   }
-}
-
-async function closeCurrentTicket() {
-  if (!currentTicket) return;
-  const tid = currentTicket.ticket_id;
-  await fetch(`${API}/support/close/${tid}`, {method:'POST'});
-  delete tickets[tid];
-  currentTicket = null;
-  renderTicketsList();
-  document.getElementById('supportChatEmpty').style.display = 'flex';
-  document.getElementById('supportMessages').style.display  = 'none';
-  document.getElementById('supportInputArea').style.display = 'none';
 }
 
 function handleSupportKey(e) {
@@ -627,17 +710,31 @@ function handleSupportKey(e) {
   }, 0);
 }
 
-function showSupportNotification(t) {
-  const lastQ = (t.questions || []).slice(-1)[0] || '—';
-  if (Notification.permission === 'granted') {
-    new Notification(`Новый тикет ${t.ticket_id}`, { body: lastQ });
+async function closeCurrentTicket() {
+  if (!activeTicketId) return;
+  const tid = activeTicketId;
+  try {
+    await fetch(API + '/support/close/' + tid, {method: 'POST'});
+    delete tickets[tid];
+    activeTicketId = null;
+    renderTicketList();
+    $('supportChatEmpty').style.display  = 'flex';
+    $('supportMessages').style.display   = 'none';
+    $('supportInputArea').style.display  = 'none';
+    $('supportMessages').innerHTML = '';
+  } catch(e) {
+    console.error('closeCurrentTicket error:', e);
   }
 }
 
-// ── Старт ─────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// СТАРТ
+// ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-  if (Notification.permission === 'default') Notification.requestPermission();
-  initUserWidget();
+  if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+  initUser();
 });
 </script>
 </body>
