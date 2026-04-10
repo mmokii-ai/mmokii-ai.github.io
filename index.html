@@ -194,7 +194,7 @@
   }
 
   /* Чат поддержки */
-  .support-chat { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .support-chat { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
   .support-chat-empty {
     flex: 1; display: flex; align-items: center; justify-content: center;
     color: #aaa; font-size: 14px; font-style: italic;
@@ -267,7 +267,7 @@
     </div>
 
     <!-- Панель после входа -->
-    <div class="support-panel" id="supportMain" style="display:none">
+    <div class="support-panel" id="supportMain" style="display:none;flex-direction:column">
       <div class="tickets-sidebar" id="ticketsList">
         <div class="no-tickets" id="noTickets">Нет открытых тикетов</div>
       </div>
@@ -292,7 +292,7 @@
 <script>
 // ── Конфиг ────────────────────────────────────────────────────
 // ЗАМЕНИТЕ на URL вашего Railway-проекта:
-const API = (window.BACKEND_URL || 'https://isales-bot-production.up.railway.app/').replace(/\/$/, '');
+const API = (window.BACKEND_URL || 'https://YOUR-RAILWAY-URL.up.railway.app').replace(/\/$/, '');
 const WS_BASE = API.replace(/^https/, 'wss').replace(/^http/, 'ws');
 
 // ── Состояние ─────────────────────────────────────────────────
@@ -453,6 +453,7 @@ async function supportLogin() {
     if (res.ok) {
       document.getElementById('supportLogin').style.display = 'none';
       document.getElementById('supportMain').style.display  = 'flex';
+      document.getElementById('supportMain').style.flexDirection = 'column';
       document.getElementById('supportDot').classList.add('online');
       connectSupportWs();
       loadTickets();
@@ -491,7 +492,15 @@ async function loadTickets() {
 function registerTicket(t) {
   const tid = t.ticket_id;
   if (!tid) return;
-  tickets[tid] = t;
+  // Нормализуем: бэкенд может отдавать chat_history или messages
+  if (t.chat_history && !t.messages) t.messages = t.chat_history;
+  if (!t.messages) t.messages = [];
+  // Если тикет уже есть — мержим сообщения, не затираем
+  if (tickets[tid]) {
+    tickets[tid] = { ...tickets[tid], ...t };
+  } else {
+    tickets[tid] = t;
+  }
   renderTicketsList();
 }
 
@@ -544,9 +553,16 @@ function openTicket(tid) {
   area.style.display  = 'flex';
   msgs.innerHTML = '';
 
-  // Показываем историю
-  const history = currentTicket.messages || [];
-  history.forEach(m => addSupportMsg(m.role, m.text, m.time, false));
+  // Показываем историю (нормализуем оба варианта поля)
+  const history = currentTicket.messages || currentTicket.chat_history || [];
+  if (!history.length) {
+    // Если история пустая — показываем вопросы пользователя
+    (currentTicket.questions || []).forEach(q => {
+      addSupportMsg('user', q, currentTicket.created_at ? new Date(currentTicket.created_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}) : '', false);
+    });
+  } else {
+    history.forEach(m => addSupportMsg(m.role, m.text, m.time, false));
+  }
   scrollBottom(msgs);
 }
 
