@@ -174,12 +174,16 @@ body {
   display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0;
 }
 .close-btn {
-  background: #27ae60; color: white; border: none;
+  color: white; border: none;
   border-radius: 8px; padding: 7px 13px; font-size: 13px;
-  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background .15s;
 }
-.close-btn:hover { background: #219a52; }
+.close-btn.faq    { background: #27ae60; }
+.close-btn.faq:hover { background: #219a52; }
+.close-btn.nofaq  { background: #888; }
+.close-btn.nofaq:hover { background: #666; }
 .close-btn:disabled { background: #aaa; cursor: not-allowed; }
+.close-btns { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
 
 /* Статус тикета в заголовке чата поддержки */
 .sup-ticket-head {
@@ -483,7 +487,10 @@ table.faq-tbl td:first-child {
         </div>
         <div class="sup-msgs" id="sMsgs" style="display:none"></div>
         <div class="sup-input-area" id="sInputArea" style="display:none">
-          <button class="close-btn" id="sCloseBtn" onclick="closeTicket()">Закрыть тикет</button>
+          <div class="close-btns">
+            <button class="close-btn faq"   id="sCloseBtnFaq"   onclick="closeTicket(true)"  title="Закрыть и добавить ответ в базу знаний">&#x2705; Закрыть + FAQ</button>
+            <button class="close-btn nofaq" id="sCloseBtnNoFaq" onclick="closeTicket(false)" title="Закрыть без добавления в FAQ">Закрыть</button>
+          </div>
           <textarea class="chat-input" id="sInput" placeholder="Ответ пользователю..." rows="1"
             onkeydown="onSupKey(event)"></textarea>
           <button class="send-btn" id="sBtn" onclick="sendSupport()">Ответить</button>
@@ -807,9 +814,11 @@ function sConnectWs() {
           if (activeTid === tid) {
             sAddMsg('system', ev.message);
             sUpdateHead(tid);
-            // Блокируем ввод, оставляем только "Закрыть тикет"
+            // Блокируем ввод и кнопки закрытия
             $('sInput').disabled = true;
             $('sBtn').disabled   = true;
+            if ($('sCloseBtnFaq'))   $('sCloseBtnFaq').disabled   = true;
+            if ($('sCloseBtnNoFaq')) $('sCloseBtnNoFaq').disabled = true;
           }
           sRender();
         }
@@ -959,8 +968,10 @@ function sOpenTicket(tid) {
 
   // Блокировка ввода если тикет решён
   const resolved = t.state === 'resolved';
-  $('sInput').disabled = resolved;
-  $('sBtn').disabled   = resolved;
+  $('sInput').disabled       = resolved;
+  $('sBtn').disabled         = resolved;
+  if ($('sCloseBtnFaq'))   $('sCloseBtnFaq').disabled   = resolved;
+  if ($('sCloseBtnNoFaq')) $('sCloseBtnNoFaq').disabled = resolved;
   $('sInput').focus();
 }
 
@@ -1039,14 +1050,24 @@ async function sendSupport() {
   }
 }
 
-async function closeTicket() {
+async function closeTicket(saveFaq) {
   if (!activeTid) return;
-  const tid = activeTid;
+  const tid  = activeTid;
+  const btn1 = $('sCloseBtnFaq');
+  const btn2 = $('sCloseBtnNoFaq');
+  if (btn1) btn1.disabled = true;
+  if (btn2) btn2.disabled = true;
   try {
-    await fetch(API + '/support/close/' + tid, {method:'POST'});
+    await fetch(API + '/support/close/' + tid, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({save_faq: saveFaq}),
+    });
     // WS событие ticket_closed придёт и уберёт тикет
   } catch(e) {
     console.error('closeTicket:', e);
+    if (btn1) btn1.disabled = false;
+    if (btn2) btn2.disabled = false;
   }
 }
 
