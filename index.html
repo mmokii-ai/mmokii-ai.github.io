@@ -814,11 +814,11 @@ function sConnectWs() {
           if (activeTid === tid) {
             sAddMsg('system', ev.message);
             sUpdateHead(tid);
-            // Блокируем ввод и кнопки закрытия
+            // Пользователь подтвердил — блокируем ввод ответа, но открываем кнопки закрытия
             $('sInput').disabled = true;
             $('sBtn').disabled   = true;
-            if ($('sCloseBtnFaq'))   $('sCloseBtnFaq').disabled   = true;
-            if ($('sCloseBtnNoFaq')) $('sCloseBtnNoFaq').disabled = true;
+            if ($('sCloseBtnFaq'))   $('sCloseBtnFaq').disabled   = false;
+            if ($('sCloseBtnNoFaq')) $('sCloseBtnNoFaq').disabled = false;
           }
           sRender();
         }
@@ -966,12 +966,14 @@ function sOpenTicket(tid) {
   }
   scrollBot(msgs);
 
-  // Блокировка ввода если тикет решён
+  // Блокировка в зависимости от статуса тикета
   const resolved = t.state === 'resolved';
-  $('sInput').disabled       = resolved;
-  $('sBtn').disabled         = resolved;
-  if ($('sCloseBtnFaq'))   $('sCloseBtnFaq').disabled   = resolved;
-  if ($('sCloseBtnNoFaq')) $('sCloseBtnNoFaq').disabled = resolved;
+  $('sInput').disabled = resolved;
+  $('sBtn').disabled   = resolved;
+  // FAQ-кнопка доступна только после подтверждения пользователем
+  if ($('sCloseBtnFaq'))   $('sCloseBtnFaq').disabled   = !resolved;
+  // Кнопка «просто закрыть» всегда доступна
+  if ($('sCloseBtnNoFaq')) $('sCloseBtnNoFaq').disabled = false;
   $('sInput').focus();
 }
 
