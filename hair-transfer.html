@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hair Transfer — Perfect Corp API</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #131313;
+    --surface2: #1c1c1c;
+    --border: #2a2a2a;
+    --accent: #c8f060;
+    --accent2: #60f0c8;
+    --text: #f0ede8;
+    --muted: #666;
+    --error: #ff5555;
+    --success: #60f0c8;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  header {
+    padding: 2rem 3rem;
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  header span {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem 5rem;
+  }
+
+  /* API Key section */
+  .api-section {
+    margin-bottom: 3rem;
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .api-section label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .api-section input {
+    flex: 1;
+    min-width: 200px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    padding: 0.6rem 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .api-section input:focus { border-color: var(--accent); }
+
+  /* Upload grid */
+  .upload-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 640px) {
+    .upload-grid { grid-template-columns: 1fr; }
+    header { padding: 1.5rem; }
+    .main { padding: 2rem 1rem; }
+  }
+
+  .upload-card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    overflow: hidden;
+  }
+
+  .upload-card:hover, .upload-card.drag-over {
+    border-color: var(--accent);
+    background: var(--surface2);
+  }
+
+  .upload-card input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-label {
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    pointer-events: none;
+  }
+
+  .upload-tag {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+
+  .upload-hint {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-left: auto;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .upload-preview {
+    position: relative;
+    aspect-ratio: 4/5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .upload-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
+
+  .upload-preview img.loaded { display: block; }
+
+  .upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--muted);
+    pointer-events: none;
+    transition: opacity 0.2s;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .upload-placeholder svg { opacity: 0.4; }
+  .upload-placeholder span { font-size: 0.8rem; letter-spacing: 0.05em; }
+
+  .upload-card:hover .upload-placeholder { opacity: 0.7; }
+
+  .file-name {
+    padding: 0.5rem 1rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent2);
+    border-top: 1px solid var(--border);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: none;
+  }
+
+  .file-name.show { display: block; }
+
+  /* Submit button */
+  .submit-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-run {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.1em;
+    color: var(--bg);
+    background: var(--accent);
+    border: none;
+    padding: 0.8rem 2.5rem;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  }
+
+  .btn-run:hover { background: #d8ff70; transform: translateY(-1px); }
+  .btn-run:active { transform: translateY(0); }
+  .btn-run:disabled { background: #444; color: #666; cursor: not-allowed; transform: none; }
+
+  .status-line {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: none;
+    flex-shrink: 0;
+  }
+
+  .spinner.active { display: block; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Progress bar */
+  .progress-bar-wrap {
+    height: 2px;
+    background: var(--border);
+    margin-bottom: 2.5rem;
+    overflow: hidden;
+    display: none;
+  }
+
+  .progress-bar-wrap.show { display: block; }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  /* Result section */
+  .result-section {
+    display: none;
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  .result-section.show { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .result-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 0.08em;
+    color: var(--accent2);
+  }
+
+  .result-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.6rem;
+    border: 1px solid var(--accent2);
+    color: var(--accent2);
+  }
+
+  .result-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  .result-img-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .result-img-card img {
+    width: 100%;
+    display: block;
+    aspect-ratio: 4/5;
+    object-fit: cover;
+  }
+
+  .result-img-footer {
+    padding: 0.6rem 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+  }
+
+  .result-img-idx {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  .btn-dl {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--accent);
+    padding: 0.25rem 0.6rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background 0.15s, color 0.15s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-dl:hover { background: var(--accent); color: var(--bg); }
+
+  /* Error block */
+  .error-block {
+    background: rgba(255,85,85,0.08);
+    border: 1px solid var(--error);
+    border-left: 3px solid var(--error);
+    padding: 1rem 1.25rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--error);
+    white-space: pre-wrap;
+    word-break: break-all;
+    display: none;
+    margin-bottom: 2rem;
+  }
+
+  .error-block.show { display: block; }
+
+  /* Log box */
+  .log-toggle {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0;
+  }
+
+  .log-toggle:hover { color: var(--text); }
+
+  .log-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    padding: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    line-height: 1.7;
+  }
+
+  .log-box.show { display: block; }
+  .log-entry { color: var(--text); }
+  .log-entry.ok { color: var(--success); }
+  .log-entry.err { color: var(--error); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.5rem 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Hair Transfer</h1>
+  <span>Perfect Corp API / S2S v2.1</span>
+</header>
+
+<div class="main">
+
+  <!-- API KEY -->
+  <div class="api-section">
+    <label>API Bearer Token</label>
+    <input type="password" id="apiKey" placeholder="sk-..." spellcheck="false" autocomplete="off">
+  </div>
+
+  <!-- UPLOADS -->
+  <div class="upload-grid">
+
+    <!-- Source photo -->
+    <div class="upload-card" id="srcCard">
+      <input type="file" id="srcFile" accept="image/*">
+      <div class="upload-label">
+        <span class="upload-tag">Фото человека</span>
+        <span class="upload-hint">source</span>
+      </div>
+      <div class="upload-preview">
+        <img id="srcPreview">
+        <div class="upload-placeholder" id="srcPlaceholder">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+          <span>Перетащите или нажмите<br>для выбора фото</span>
+        </div>
+      </div>
+      <div class="file-name" id="srcFileName"></div>
+    </div>
+
+    <!-- Reference hairstyle -->
+    <div class="upload-card" id="refCard">
+      <input type="file" id="refFile" accept="image/*">
+      <div class="upload-label">
+        <span class="upload-tag">Причёска (референс)</span>
+        <span class="upload-hint">reference</span>
+      </div>
+      <div class="upload-preview">
+        <img id="refPreview">
+        <div class="upload-placeholder" id="refPlaceholder">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
+            <path d="M12 2C8 2 5 5 5 9c0 3 2 5.5 5 6.5V20h4v-4.5c3-1 5-3.5 5-6.5 0-4-3-7-7-7z"/>
+          </svg>
+          <span>Перетащите или нажмите<br>для выбора референса</span>
+        </div>
+      </div>
+      <div class="file-name" id="refFileName"></div>
+    </div>
+
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="submit-row">
+    <button class="btn-run" id="runBtn" disabled>Запустить</button>
+    <div class="status-line">
+      <div class="spinner" id="spinner"></div>
+      <span id="statusText">Загрузите оба изображения</span>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-bar-wrap" id="progressWrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- ERROR -->
+  <div class="error-block" id="errorBlock"></div>
+
+  <!-- RESULT -->
+  <div class="result-section" id="resultSection">
+    <div class="result-header">
+      <h2>Результат</h2>
+      <div class="result-badge" id="resultBadge">SUCCESS</div>
+    </div>
+    <div class="result-images" id="resultImages"></div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- LOG -->
+  <button class="log-toggle" id="logToggle">▶ Лог запросов</button>
+  <div class="log-box" id="logBox"></div>
+
+</div>
+
+<script>
+  const API_BASE = 'https://yce-api-01.makeupar.com/s2s/v2.1/task/hair-transfer';
+
+  // --- Elements ---
+  const apiKeyEl   = document.getElementById('apiKey');
+  const srcFile    = document.getElementById('srcFile');
+  const refFile    = document.getElementById('refFile');
+  const srcPreview = document.getElementById('srcPreview');
+  const refPreview = document.getElementById('refPreview');
+  const srcPlaceholder = document.getElementById('srcPlaceholder');
+  const refPlaceholder = document.getElementById('refPlaceholder');
+  const srcFileName    = document.getElementById('srcFileName');
+  const refFileName    = document.getElementById('refFileName');
+  const runBtn     = document.getElementById('runBtn');
+  const spinner    = document.getElementById('spinner');
+  const statusText = document.getElementById('statusText');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressBar  = document.getElementById('progressBar');
+  const errorBlock   = document.getElementById('errorBlock');
+  const resultSection= document.getElementById('resultSection');
+  const resultImages = document.getElementById('resultImages');
+  const resultBadge  = document.getElementById('resultBadge');
+  const logBox    = document.getElementById('logBox');
+  const logToggle = document.getElementById('logToggle');
+
+  // Pre-fill API key from localStorage
+  const savedKey = localStorage.getItem('pc_api_key');
+  if (savedKey) apiKeyEl.value = savedKey;
+  apiKeyEl.addEventListener('change', () => localStorage.setItem('pc_api_key', apiKeyEl.value.trim()));
+
+  // --- State ---
+  let srcDataUrl = null;
+  let refDataUrl = null;
+
+  // --- Helpers ---
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  function log(msg, type = '') {
+    const div = document.createElement('div');
+    div.className = 'log-entry' + (type ? ' ' + type : '');
+    div.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+    logBox.appendChild(div);
+    logBox.scrollTop = logBox.scrollHeight;
+  }
+
+  function setStatus(msg, busy = false) {
+    statusText.textContent = msg;
+    spinner.classList.toggle('active', busy);
+  }
+
+  function setProgress(pct) {
+    progressWrap.classList.add('show');
+    progressBar.style.width = pct + '%';
+  }
+
+  function showError(msg) {
+    errorBlock.textContent = msg;
+    errorBlock.classList.add('show');
+  }
+
+  function clearError() {
+    errorBlock.classList.remove('show');
+    errorBlock.textContent = '';
+  }
+
+  function checkReady() {
+    const ready = srcDataUrl && refDataUrl;
+    runBtn.disabled = !ready;
+    if (!ready) setStatus('Загрузите оба изображения');
+    else setStatus('Готово к запуску');
+  }
+
+  // --- File handling ---
+  function handleFile(file, previewEl, placeholderEl, fileNameEl, callback) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      previewEl.src = e.target.result;
+      previewEl.classList.add('loaded');
+      placeholderEl.style.display = 'none';
+      fileNameEl.textContent = file.name;
+      fileNameEl.classList.add('show');
+      callback(e.target.result);
+      checkReady();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  srcFile.addEventListener('change', e => {
+    handleFile(e.target.files[0], srcPreview, srcPlaceholder, srcFileName, v => srcDataUrl = v);
+  });
+
+  refFile.addEventListener('change', e => {
+    handleFile(e.target.files[0], refPreview, refPlaceholder, refFileName, v => refDataUrl = v);
+  });
+
+  // Drag over visual
+  ['srcCard', 'refCard'].forEach(id => {
+    const card = document.getElementById(id);
+    card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drag-over'); });
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+    card.addEventListener('drop', () => card.classList.remove('drag-over'));
+  });
+
+  // --- Log toggle ---
+  logToggle.addEventListener('click', () => {
+    logBox.classList.toggle('show');
+    logToggle.textContent = logBox.classList.contains('show')
+      ? '▼ Лог запросов'
+      : '▶ Лог запросов';
+  });
+
+  // --- Upload image to ImgBB (free, no registration needed for temp links) ---
+  // We use a CORS-friendly image hosting to get a public URL for the API.
+  // ImgBB free API key (public demo key - replace with your own from imgbb.com if needed)
+  const IMGBB_KEY = ''; // <-- (опционально) вставьте ваш ключ imgbb.com
+
+  async function uploadToImgBB(dataUrl) {
+    const base64 = dataUrl.split(',')[1];
+    const fd = new FormData();
+    fd.append('image', base64);
+    const key = IMGBB_KEY || '2e46bcde765e5b3f1c7e1be5b56db8a3'; // публичный демо-ключ
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${key}`, { method: 'POST', body: fd });
+    if (!res.ok) throw new Error('ImgBB upload failed: ' + res.status);
+    const json = await res.json();
+    if (!json.success) throw new Error('ImgBB error: ' + JSON.stringify(json.error));
+    return json.data.url;
+  }
+
+  // --- API call ---
+  async function startTask(srcUrl, refUrl, token) {
+    const body = JSON.stringify({ src_file_url: srcUrl, ref_file_url: refUrl });
+    log('POST ' + API_BASE);
+    const res = await fetch(API_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body
+    });
+    const text = await res.text();
+    let json = {};
+    try { json = JSON.parse(text); } catch {}
+    log('Response ' + res.status + ': ' + text.slice(0, 200), res.ok ? 'ok' : 'err');
+    if (!res.ok) throw new Error('API error ' + res.status + ': ' + text);
+    const taskId = json?.data?.task_id;
+    if (!taskId) throw new Error('task_id not found: ' + text);
+    return taskId;
+  }
+
+  async function pollTask(taskId, token, onAttempt) {
+    const url = API_BASE + '/' + encodeURIComponent(taskId);
+    for (let i = 1; i <= 300; i++) {
+      await sleep(2000);
+      log('GET ' + url + ' (attempt ' + i + ')');
+      const res = await fetch(url, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const text = await res.text();
+      let json = {};
+      try { json = JSON.parse(text); } catch {}
+      const status = json?.data?.task_status;
+      log('Status: ' + status, status === 'success' ? 'ok' : status === 'error' ? 'err' : '');
+      onAttempt(i, status);
+      if (status === 'success') return json;
+      if (status === 'error') throw new Error('Task failed: ' + text);
+    }
+    throw new Error('Timeout: max attempts exceeded');
+  }
+
+  // --- Render results ---
+  function renderResults(json) {
+    resultImages.innerHTML = '';
+    const results = json?.data?.results;
+    if (!results || !results.length) {
+      resultImages.innerHTML = '<div style="color:var(--muted);font-size:.8rem">Нет изображений в ответе</div>';
+      return;
+    }
+    results.forEach((item, idx) => {
+      const url = item?.url || item?.image_url || (typeof item === 'string' ? item : null);
+      if (!url) return;
+      const card = document.createElement('div');
+      card.className = 'result-img-card';
+      card.innerHTML = `
+        <img src="${url}" alt="Result ${idx+1}" loading="lazy">
+        <div class="result-img-footer">
+          <span class="result-img-idx">result_${String(idx+1).padStart(2,'0')}</span>
+          <a class="btn-dl" href="${url}" target="_blank" download>↓ Открыть</a>
+        </div>
+      `;
+      resultImages.appendChild(card);
+    });
+  }
+
+  // --- Main flow ---
+  runBtn.addEventListener('click', async () => {
+    const token = apiKeyEl.value.trim();
+    if (!token) { showError('Введите Bearer Token'); return; }
+    if (!srcDataUrl || !refDataUrl) { showError('Загрузите оба изображения'); return; }
+
+    clearError();
+    resultSection.classList.remove('show');
+    runBtn.disabled = true;
+    logBox.innerHTML = '';
+
+    try {
+      // Step 1: Upload images
+      setStatus('Загружаю изображения на хостинг…', true);
+      setProgress(10);
+      log('Uploading source image to ImgBB…');
+      const srcUrl = await uploadToImgBB(srcDataUrl);
+      log('Source URL: ' + srcUrl, 'ok');
+      setProgress(25);
+
+      log('Uploading reference image to ImgBB…');
+      const refUrl = await uploadToImgBB(refDataUrl);
+      log('Reference URL: ' + refUrl, 'ok');
+      setProgress(40);
+
+      // Step 2: Start task
+      setStatus('Создаю задачу…', true);
+      const taskId = await startTask(srcUrl, refUrl, token);
+      log('Task ID: ' + taskId, 'ok');
+      setProgress(50);
+
+      // Step 3: Poll
+      setStatus('Обрабатываю… (это может занять 10–60 сек)', true);
+      const finalJson = await pollTask(taskId, token, (attempt, status) => {
+        const pct = Math.min(50 + attempt * 1.5, 92);
+        setProgress(pct);
+        setStatus(`Ожидаю результат… попытка ${attempt} (${status || '…'})`, true);
+      });
+
+      setProgress(100);
+      setStatus('Готово!', false);
+      log('Done!', 'ok');
+
+      renderResults(finalJson);
+      resultSection.classList.add('show');
+
+    } catch (err) {
+      setStatus('Ошибка', false);
+      showError(err.message || String(err));
+      log(err.message || String(err), 'err');
+      setProgress(0);
+      progressWrap.classList.remove('show');
+    } finally {
+      runBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
