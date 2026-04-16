@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hair Transfer — Андрей Туганов</title>
+<title>Hair Studio — Андрей Туганов</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
 
@@ -31,169 +31,194 @@
     overflow-x: hidden;
   }
 
-  /* Grain overlay — pointer-events: none важен, z-index не перекрывает интерактив */
   body::after {
     content: '';
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-    opacity: 0.03;
-    pointer-events: none;
-    z-index: 9999;
+    opacity: 0.03; pointer-events: none; z-index: 9999;
   }
 
+  /* ── HEADER ─────────────────────────────────────────── */
   header {
     padding: 2rem 3rem;
-    display: flex;
-    align-items: baseline;
-    gap: 1.5rem;
+    display: flex; align-items: baseline; gap: 1.5rem;
     border-bottom: 1px solid var(--border);
   }
-
   header h1 {
     font-family: 'Bebas Neue', sans-serif;
     font-size: clamp(2.5rem, 5vw, 4rem);
-    letter-spacing: 0.05em;
-    color: var(--accent);
-    line-height: 1;
+    letter-spacing: 0.05em; color: var(--accent); line-height: 1;
   }
-
   header span {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-family: 'DM Mono', monospace; font-size: 0.75rem;
+    color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase;
   }
 
-  .main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 3rem 2rem 5rem;
-  }
+  .main { max-width: 1200px; margin: 0 auto; padding: 3rem 2rem 5rem; }
 
-  /* ---- UPLOAD CARDS ---- */
-  .upload-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-  }
 
-  @media (max-width: 640px) {
-    .upload-grid { grid-template-columns: 1fr; }
-    header { padding: 1.5rem; }
-    .main { padding: 2rem 1rem; }
-  }
 
-  /* Скрытые нативные input — живут вне карточек, вызываются через .click() */
-  .hidden-file-input {
-    display: none;
+  /* ── MODE TABS ───────────────────────────────────────── */
+  .mode-tabs {
+    display: flex; gap: 0; margin-bottom: 2rem;
+    border: 1px solid var(--border);
   }
+  .mode-tab {
+    flex: 1; padding: 0.75rem 1rem; background: var(--surface);
+    border: none; color: var(--muted); cursor: pointer;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem;
+    letter-spacing: 0.08em; transition: background 0.2s, color 0.2s;
+    border-right: 1px solid var(--border);
+  }
+  .mode-tab:last-child { border-right: none; }
+  .mode-tab:hover { background: var(--surface2); color: var(--text); }
+  .mode-tab.active { background: var(--surface2); color: var(--accent); }
+
+  /* ── UPLOAD GRID ─────────────────────────────────────── */
+  .hidden-file-input { display: none; }
+
+  .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+  .upload-grid.single { grid-template-columns: 1fr 1fr; } /* keep layout, second slot hidden */
 
   .upload-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-    /* НЕТ overflow:hidden — он блокировал нативный input */
+    background: var(--surface); border: 1px solid var(--border);
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
     user-select: none;
   }
-
-  .upload-card:hover,
-  .upload-card.drag-over {
-    border-color: var(--accent);
-    background: var(--surface2);
+  .upload-card:hover, .upload-card.drag-over {
+    border-color: var(--accent); background: var(--surface2);
   }
-
   .upload-label {
-    padding: 0.75rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem;
     border-bottom: 1px solid var(--border);
   }
-
   .upload-tag {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.1rem;
-    letter-spacing: 0.1em;
-    color: var(--accent);
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem;
+    letter-spacing: 0.1em; color: var(--accent);
   }
-
-  .upload-hint {
-    font-size: 0.75rem;
-    color: var(--muted);
-    margin-left: auto;
-    font-family: 'DM Mono', monospace;
-  }
-
+  .upload-hint { font-size: 0.75rem; color: var(--muted); margin-left: auto; font-family: 'DM Mono', monospace; }
   .upload-preview {
-    aspect-ratio: 4/5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
+    aspect-ratio: 4/5; display: flex; align-items: center;
+    justify-content: center; overflow: hidden; position: relative;
   }
-
-  .upload-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: none;
-    pointer-events: none;
-  }
-
+  .upload-preview img { width: 100%; height: 100%; object-fit: cover; display: none; pointer-events: none; }
   .upload-preview img.loaded { display: block; }
-
   .upload-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    color: var(--muted);
-    transition: opacity 0.2s;
-    padding: 2rem;
-    text-align: center;
-    pointer-events: none;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0.75rem; color: var(--muted); transition: opacity 0.2s;
+    padding: 2rem; text-align: center; pointer-events: none;
   }
-
   .upload-placeholder svg { opacity: 0.4; }
   .upload-placeholder span { font-size: 0.8rem; letter-spacing: 0.05em; }
   .upload-card:hover .upload-placeholder { opacity: 0.7; }
-
   .file-name {
-    padding: 0.5rem 1rem;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--accent2);
-    border-top: 1px solid var(--border);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: none;
+    padding: 0.5rem 1rem; font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    color: var(--accent2); border-top: 1px solid var(--border);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: none;
   }
   .file-name.show { display: block; }
 
-  /* ---- SUBMIT ---- */
-  .submit-row {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    margin-bottom: 3rem;
-    flex-wrap: wrap;
+  /* ── COLOR PICKER (hair-color mode) ─────────────────── */
+  .color-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    margin-bottom: 2rem; display: none;
+  }
+  .color-panel.show { display: block; }
+  .color-panel-header {
+    padding: 0.75rem 1rem; border-bottom: 1px solid var(--border);
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem;
+    letter-spacing: 0.08em; color: var(--accent);
+  }
+  .color-panel-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 1.25rem; }
+
+  /* Preset swatches */
+  .color-presets {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+    gap: 6px;
+  }
+  .swatch {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer; transition: transform 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+  .swatch:hover { transform: scale(1.15); }
+  .swatch.active { border-color: var(--text); transform: scale(1.1); }
+
+  /* Custom color row */
+  .color-custom-row {
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  }
+  .color-custom-row label {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+  }
+  input[type="color"] {
+    width: 44px; height: 44px; border: 1px solid var(--border);
+    background: none; cursor: pointer; padding: 2px;
+    border-radius: 0;
+  }
+  .color-hex-input {
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); font-family: 'DM Mono', monospace;
+    font-size: 0.85rem; padding: 0.4rem 0.7rem;
+    width: 100px; outline: none; text-transform: uppercase;
+  }
+  .color-hex-input:focus { border-color: var(--accent); }
+
+  /* Sliders */
+  .sliders-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  .slider-group { display: flex; flex-direction: column; gap: 0.5rem; }
+  .slider-label-row {
+    display: flex; justify-content: space-between;
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+  }
+  .slider-val { color: var(--accent); }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 3px; background: var(--border); outline: none;
+    border-radius: 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px; background: var(--accent);
+    cursor: pointer; border-radius: 50%;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px; background: var(--accent);
+    cursor: pointer; border-radius: 50%; border: none;
   }
 
+  /* Pattern selector */
+  .pattern-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .pattern-btn {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.35rem 0.8rem; border: 1px solid var(--border);
+    background: none; color: var(--muted); cursor: pointer;
+    transition: all 0.15s;
+  }
+  .pattern-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .pattern-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(200,240,96,0.07); }
+
+  /* Color preview strip */
+  .color-preview-strip {
+    height: 6px;
+    border-radius: 0;
+    transition: background 0.2s;
+  }
+
+  /* ── SUBMIT ─────────────────────────────────────────── */
+  .submit-row {
+    display: flex; align-items: center; gap: 1.5rem;
+    margin-bottom: 3rem; flex-wrap: wrap;
+  }
   .btn-run {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.4rem;
-    letter-spacing: 0.1em;
-    color: var(--bg);
-    background: var(--accent);
-    border: none;
-    padding: 0.8rem 2.5rem;
-    cursor: pointer;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem;
+    letter-spacing: 0.1em; color: var(--bg); background: var(--accent);
+    border: none; padding: 0.8rem 2.5rem; cursor: pointer;
     transition: background 0.15s, transform 0.1s;
     clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
   }
@@ -201,107 +226,70 @@
   .btn-run:active { transform: translateY(0); }
   .btn-run:disabled { background: #444; color: #666; cursor: not-allowed; transform: none; }
 
-  .status-line {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.78rem;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+  .btn-diag {
+    font-family: 'DM Mono', monospace; font-size: 0.75rem;
+    letter-spacing: 0.05em; color: var(--accent2);
+    background: none; border: 1px solid var(--accent2);
+    padding: 0.5rem 1rem; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
   }
+  .btn-diag:hover { background: var(--accent2); color: var(--bg); }
 
+  .status-line {
+    font-family: 'DM Mono', monospace; font-size: 0.78rem;
+    color: var(--muted); display: flex; align-items: center; gap: 0.75rem;
+  }
   .spinner {
-    width: 14px; height: 14px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    display: none;
-    flex-shrink: 0;
+    width: 14px; height: 14px; border: 2px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite; display: none; flex-shrink: 0;
   }
   .spinner.active { display: block; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ---- PROGRESS ---- */
-  .progress-bar-wrap {
-    height: 2px;
-    background: var(--border);
-    margin-bottom: 2.5rem;
-    overflow: hidden;
-    display: none;
-  }
+  /* ── PROGRESS ─────────────────────────────────────────*/
+  .progress-bar-wrap { height: 2px; background: var(--border); margin-bottom: 2.5rem; overflow: hidden; display: none; }
   .progress-bar-wrap.show { display: block; }
-  .progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    width: 0%;
-    transition: width 0.4s ease;
-  }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width 0.4s ease; }
 
-  /* ---- RESULT ---- */
+  /* ── ERROR ───────────────────────────────────────────*/
+  .error-block {
+    background: rgba(255,85,85,0.08); border: 1px solid var(--error);
+    border-left: 3px solid var(--error); padding: 1rem 1.25rem;
+    font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--error);
+    white-space: pre-wrap; word-break: break-all; display: none; margin-bottom: 2rem;
+  }
+  .error-block.show { display: block; }
+
+  /* ── RESULT ──────────────────────────────────────────*/
   .result-section { display: none; animation: fadeUp 0.5s ease forwards; }
   .result-section.show { display: block; }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .result-header {
-    display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
-  }
-  .result-header h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.8rem; letter-spacing: 0.08em; color: var(--accent2);
-  }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  .result-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+  .result-header h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.08em; color: var(--accent2); }
   .result-badge {
     font-family: 'DM Mono', monospace; font-size: 0.65rem;
     letter-spacing: 0.2em; text-transform: uppercase;
     padding: 0.25rem 0.6rem; border: 1px solid var(--accent2); color: var(--accent2);
   }
-
-  .result-images {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
-  }
-
-  .result-img-card {
-    background: var(--surface); border: 1px solid var(--border);
-    overflow: hidden; position: relative;
-  }
-  .result-img-card img {
-    width: 100%; display: block; aspect-ratio: 4/5; object-fit: cover;
-  }
-  .result-img-footer {
-    padding: 0.6rem 0.8rem; display: flex;
-    justify-content: space-between; align-items: center;
-    border-top: 1px solid var(--border);
-  }
+  .result-images { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+  .result-img-card { background: var(--surface); border: 1px solid var(--border); overflow: hidden; }
+  .result-img-card img { width: 100%; display: block; aspect-ratio: 4/5; object-fit: cover; }
+  .result-img-footer { padding: 0.6rem 0.8rem; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); }
   .result-img-idx { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted); }
   .btn-dl {
     font-family: 'DM Mono', monospace; font-size: 0.68rem;
     color: var(--accent); background: none; border: 1px solid var(--accent);
     padding: 0.25rem 0.6rem; cursor: pointer; letter-spacing: 0.05em;
-    transition: background 0.15s, color 0.15s;
-    text-decoration: none; display: inline-block;
+    transition: background 0.15s, color 0.15s; text-decoration: none; display: inline-block;
   }
   .btn-dl:hover { background: var(--accent); color: var(--bg); }
 
-  /* ---- ERROR ---- */
-  .error-block {
-    background: rgba(255,85,85,0.08); border: 1px solid var(--error);
-    border-left: 3px solid var(--error); padding: 1rem 1.25rem;
-    font-family: 'DM Mono', monospace; font-size: 0.78rem;
-    color: var(--error); white-space: pre-wrap; word-break: break-all;
-    display: none; margin-bottom: 2rem;
-  }
-  .error-block.show { display: block; }
-
-  /* ---- LOG ---- */
+  /* ── LOG ────────────────────────────────────────────*/
   .log-toggle {
     background: none; border: none; color: var(--muted);
-    font-family: 'DM Mono', monospace; font-size: 0.7rem;
-    cursor: pointer; letter-spacing: 0.1em; text-transform: uppercase;
+    font-family: 'DM Mono', monospace; font-size: 0.7rem; cursor: pointer;
+    letter-spacing: 0.1em; text-transform: uppercase;
     margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; padding: 0;
   }
   .log-toggle:hover { color: var(--text); }
@@ -315,145 +303,114 @@
   .log-entry.ok  { color: var(--success); }
   .log-entry.err { color: var(--error); }
 
-  /* ---- HISTORY ---- */
+  /* ── HISTORY ─────────────────────────────────────────*/
   .history-section { margin-top: 4rem; }
   .history-header {
     display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
     border-top: 1px solid var(--border); padding-top: 2rem;
   }
-  .history-header h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.8rem; letter-spacing: 0.08em; color: var(--muted);
-  }
-  .history-meta {
-    font-family: 'DM Mono', monospace; font-size: 0.65rem;
-    color: var(--muted); letter-spacing: 0.1em; margin-left: auto;
-  }
-
-  /* Gist token input */
-  .gist-setup {
-    padding: 1.25rem 1.5rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--muted);
-    margin-bottom: 1.5rem;
-    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
-  }
-  .gist-setup label {
-    font-family: 'DM Mono', monospace; font-size: 0.7rem;
-    letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
-    white-space: nowrap;
-  }
-  .gist-setup input {
-    flex: 1; min-width: 200px;
-    background: var(--bg); border: 1px solid var(--border);
-    color: var(--text); font-family: 'DM Mono', monospace;
-    font-size: 0.78rem; padding: 0.5rem 0.8rem; outline: none;
-    transition: border-color 0.2s;
-  }
-  .gist-setup input:focus { border-color: var(--accent2); }
-  .btn-sm {
-    font-family: 'DM Mono', monospace; font-size: 0.72rem;
-    color: var(--accent2); background: none; border: 1px solid var(--accent2);
-    padding: 0.4rem 0.9rem; cursor: pointer; letter-spacing: 0.05em;
-    transition: background 0.15s, color 0.15s; white-space: nowrap;
-  }
-  .btn-sm:hover { background: var(--accent2); color: var(--bg); }
-
-  .history-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1rem;
-  }
-
-  .history-card {
-    background: var(--surface); border: 1px solid var(--border);
-    overflow: hidden;
-  }
-  .history-card-imgs {
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
-    gap: 1px; background: var(--border);
-  }
-  .history-card-imgs img {
-    width: 100%; aspect-ratio: 1; object-fit: cover; display: block;
-    background: var(--surface2);
-  }
-  .history-card-imgs .img-label {
-    position: relative;
-  }
-  .history-card-imgs .img-label::after {
+  .history-header h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.08em; color: var(--muted); }
+  .history-meta { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--muted); letter-spacing: 0.1em; margin-left: auto; }
+  .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+  .history-card { background: var(--surface); border: 1px solid var(--border); overflow: hidden; }
+  .history-card-imgs { display: grid; gap: 1px; background: var(--border); }
+  .history-card-imgs.layout-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .history-card-imgs.layout-2 { grid-template-columns: 1fr 1fr; }
+  .history-img-slot { position: relative; }
+  .history-img-slot::after {
     content: attr(data-label);
     position: absolute; bottom: 4px; left: 4px;
     font-family: 'DM Mono', monospace; font-size: 0.55rem;
-    color: #fff; background: rgba(0,0,0,0.6);
+    color: #fff; background: rgba(0,0,0,0.65);
     padding: 1px 4px; letter-spacing: 0.05em; text-transform: uppercase;
+    pointer-events: none;
   }
+  .history-img-slot img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: var(--surface2); }
   .history-card-footer {
     padding: 0.6rem 0.8rem; display: flex;
     justify-content: space-between; align-items: center;
     border-top: 1px solid var(--border);
   }
-  .history-date { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--muted); }
-  .history-empty {
-    font-family: 'DM Mono', monospace; font-size: 0.78rem;
-    color: var(--muted); padding: 1rem 0;
+  .history-card-meta { display: flex; flex-direction: column; gap: 0.15rem; }
+  .history-date { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); }
+  .history-mode-badge {
+    font-family: 'DM Mono', monospace; font-size: 0.55rem; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 1px 5px;
+    border: 1px solid var(--border); color: var(--muted); display: inline-block;
   }
+  .history-mode-badge.color { border-color: var(--accent2); color: var(--accent2); }
+  .history-mode-badge.transfer { border-color: var(--accent); color: var(--accent); }
+  .history-color-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 1px solid var(--border); flex-shrink: 0;
+  }
+  .history-empty { font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--muted); padding: 1rem 0; }
 
-  /* Scrollbar */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); }
 
-  .divider { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+  @media (max-width: 640px) {
+    .upload-grid { grid-template-columns: 1fr; }
+    header { padding: 1.5rem; }
+    .main { padding: 2rem 1rem; }
+    .sliders-row { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Hair Transfer</h1>
-  <span>Андрей Туганов v2.1</span>
+  <h1>Hair Studio</h1>
+  <span>Андрей Туганов v3.0</span>
 </header>
 
-<!-- Скрытые нативные file inputs — ВНЕ карточек, без overflow:hidden родителя -->
+<!-- Hidden file inputs — OUTSIDE cards, no overflow:hidden parent -->
 <input type="file" id="srcFile" class="hidden-file-input" accept="image/*">
 <input type="file" id="refFile" class="hidden-file-input" accept="image/*">
 
 <div class="main">
 
-  <!-- UPLOADS -->
-  <div class="upload-grid">
+  <!-- ── MODE TABS ── -->
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tabTransfer" onclick="setMode('transfer')">✂ Пересадка причёски</button>
+    <button class="mode-tab" id="tabColor" onclick="setMode('color')">🎨 Изменение цвета</button>
+  </div>
 
-    <!-- Source photo -->
+  <!-- ── UPLOAD GRID ── -->
+  <div class="upload-grid" id="uploadGrid">
+
     <div class="upload-card" id="srcCard">
       <div class="upload-label">
         <span class="upload-tag">Фото человека</span>
-        <span class="upload-hint">source · кликните или перетащите</span>
+        <span class="upload-hint">source · клик или drag</span>
       </div>
-      <div class="upload-preview" id="srcPreviewWrap">
+      <div class="upload-preview">
         <img id="srcPreview">
         <div class="upload-placeholder" id="srcPlaceholder">
           <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
             <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
           </svg>
-          <span>Перетащите или нажмите<br>для выбора фото</span>
+          <span>Перетащите или нажмите</span>
         </div>
       </div>
       <div class="file-name" id="srcFileName"></div>
     </div>
 
-    <!-- Reference hairstyle -->
     <div class="upload-card" id="refCard">
       <div class="upload-label">
         <span class="upload-tag">Причёска (референс)</span>
-        <span class="upload-hint">reference · кликните или перетащите</span>
+        <span class="upload-hint">reference · клик или drag</span>
       </div>
-      <div class="upload-preview" id="refPreviewWrap">
+      <div class="upload-preview">
         <img id="refPreview">
         <div class="upload-placeholder" id="refPlaceholder">
           <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
             <path d="M12 2C8 2 5 5 5 9c0 3 2 5.5 5 6.5V20h4v-4.5c3-1 5-3.5 5-6.5 0-4-3-7-7-7z"/>
           </svg>
-          <span>Перетащите или нажмите<br>для выбора референса</span>
+          <span>Перетащите или нажмите</span>
         </div>
       </div>
       <div class="file-name" id="refFileName"></div>
@@ -461,19 +418,64 @@
 
   </div>
 
-  <!-- SUBMIT -->
+  <!-- ── COLOR PANEL ── -->
+  <div class="color-panel" id="colorPanel">
+    <div class="color-panel-header">Выбор цвета волос</div>
+    <div class="color-panel-body">
+
+      <!-- Preset swatches -->
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem;">Готовые цвета</div>
+        <div class="color-presets" id="swatchGrid"></div>
+      </div>
+
+      <!-- Custom color -->
+      <div class="color-custom-row">
+        <label>Свой цвет</label>
+        <input type="color" id="colorPicker" value="#8B4513">
+        <input type="text" class="color-hex-input" id="colorHex" value="#8B4513" maxlength="7">
+        <div class="color-preview-strip" id="colorStrip" style="flex:1;min-width:60px;background:#8B4513;"></div>
+      </div>
+
+      <!-- Pattern -->
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem;">Паттерн нанесения</div>
+        <div class="pattern-row" id="patternRow"></div>
+      </div>
+
+      <!-- Sliders -->
+      <div class="sliders-row">
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span>Интенсивность цвета</span>
+            <span class="slider-val" id="colorIntVal">50</span>
+          </div>
+          <input type="range" id="colorInt" min="0" max="100" value="50">
+        </div>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span>Блеск / сияние</span>
+            <span class="slider-val" id="shineIntVal">50</span>
+          </div>
+          <input type="range" id="shineInt" min="0" max="100" value="50">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SUBMIT ── -->
   <div class="submit-row">
     <button class="btn-run" id="runBtn" disabled>Запустить</button>
+    <button class="btn-diag" id="diagBtn">🔍 Проверить подключение</button>
     <div class="status-line">
       <div class="spinner" id="spinner"></div>
-      <span id="statusText">Загрузите оба изображения</span>
+      <span id="statusText">Загрузите фото</span>
     </div>
   </div>
 
   <!-- PROGRESS -->
-  <div class="progress-bar-wrap" id="progressWrap">
-    <div class="progress-bar" id="progressBar"></div>
-  </div>
+  <div class="progress-bar-wrap" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
 
   <!-- ERROR -->
   <div class="error-block" id="errorBlock"></div>
@@ -482,50 +484,84 @@
   <div class="result-section" id="resultSection">
     <div class="result-header">
       <h2>Результат</h2>
-      <div class="result-badge" id="resultBadge">SUCCESS</div>
+      <div class="result-badge">SUCCESS</div>
     </div>
     <div class="result-images" id="resultImages"></div>
   </div>
 
   <hr class="divider">
 
-  <!-- LOG -->
-  <button class="log-toggle" id="logToggle">▶ Лог запросов</button>
-  <div class="log-box" id="logBox"></div>
+  <!-- LOG — открыт по умолчанию для диагностики -->
+  <button class="log-toggle" id="logToggle">▼ Лог запросов</button>
+  <div class="log-box show" id="logBox"></div>
 
-  <!-- HISTORY -->
+  <!-- ── HISTORY ── -->
   <div class="history-section">
     <div class="history-header">
       <h2>История</h2>
       <span class="history-meta" id="historyMeta"></span>
     </div>
-
-    <div class="gist-setup">
-      <label>GitHub Token</label>
-      <input type="password" id="gistToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" spellcheck="false" autocomplete="off">
-      <button class="btn-sm" id="loadHistoryBtn">Загрузить историю</button>
-    </div>
-
     <div id="historyGrid" class="history-grid">
-      <div class="history-empty">Введите GitHub Token и нажмите «Загрузить историю»</div>
+      <div class="history-empty">История загрузится после настройки GitHub Token</div>
     </div>
   </div>
 
 </div>
 
 <script>
-// ============================================================
-//  КОНФИГ
-// ============================================================
-const API_BASE   = 'https://yce-api-01.makeupar.com/s2s/v2.1/task/hair-transfer';
-const API_TOKEN  = 'sk-gu95OarWRsuxXgOsxwIpe3FHoQiTDyrlEZ67bkgHDI_jS3D5wMhCcEHoqwjpC523';
-const IMGBB_KEY  = '2e46bcde765e5b3f1c7e1be5b56db8a3'; // замените своим с imgbb.com
-const GIST_DESC  = 'hair-transfer-history'; // по этому описанию ищем gist
-const GIST_FILE  = 'history.json';
+// ════════════════════════════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════════════════════════════
+const PC_TOKEN      = 'sk-gu95OarWRsuxXgOsxwIpe3FHoQiTDyrlEZ67bkgHDI_jS3D5wMhCcEHoqwjpC523';
+const API_TRANSFER  = 'https://yce-api-01.makeupar.com/s2s/v2.1/task/hair-transfer';
+const API_COLOR     = 'https://yce-api-01.makeupar.com/s2s/v2.0/task/hair-color';
+const GIST_DESC     = 'hair-studio-history';
+const GIST_FILE     = 'history.json';
 
-// ============================================================
-//  ЭЛЕМЕНТЫ
-// ============================================================
+// Color presets
+const COLOR_PRESETS = [
+  { name: 'Чёрный',        hex: '#1a1008' },
+  { name: 'Тёмно-коричневый', hex: '#2c1a0e' },
+  { name: 'Коричневый',    hex: '#5c3317' },
+  { name: 'Светло-коричневый', hex: '#8B5C2A' },
+  { name: 'Золотистый блонд', hex: '#C8A96E' },
+  { name: 'Платиновый',    hex: '#E8DABB' },
+  { name: 'Пепельный блонд', hex: '#B8AFA0' },
+  { name: 'Медный',        hex: '#B87333' },
+  { name: 'Рыжий',         hex: '#C14F1C' },
+  { name: 'Auburn',        hex: '#8B2500' },
+  { name: 'Бургундский',   hex: '#6B1F3A' },
+  { name: 'Фиолетовый',    hex: '#7B2D8B' },
+  { name: 'Синий',         hex: '#1A3A7A' },
+  { name: 'Розовый',       hex: '#E87090' },
+  { name: 'Красный',       hex: '#CC2200' },
+  { name: 'Зелёный',       hex: '#2A5C2A' },
+  { name: 'Бирюзовый',     hex: '#1A7A6A' },
+  { name: 'Серебристый',   hex: '#A0A0A8' },
+];
+
+const PATTERNS = [
+  { id: 'full',      label: 'Весь' },
+  { id: 'root',      label: 'Корни' },
+  { id: 'highlight', label: 'Мелирование' },
+  { id: 'balayage',  label: 'Балаяж' },
+  { id: 'tip',       label: 'Кончики' },
+];
+
+// ════════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════════
+let currentMode   = 'transfer'; // 'transfer' | 'color'
+let srcDataUrl    = null;
+let refDataUrl    = null;
+let srcThumb      = null;
+let refThumb      = null;
+let selectedColor = '#8B4513';
+let selectedPattern = 'full';
+
+// ════════════════════════════════════════════════════════════
+//  DOM REFS
+// ════════════════════════════════════════════════════════════
 const srcFileInput   = document.getElementById('srcFile');
 const refFileInput   = document.getElementById('refFile');
 const srcCard        = document.getElementById('srcCard');
@@ -546,50 +582,116 @@ const resultSection  = document.getElementById('resultSection');
 const resultImages   = document.getElementById('resultImages');
 const logBox         = document.getElementById('logBox');
 const logToggle      = document.getElementById('logToggle');
-const gistTokenInput = document.getElementById('gistToken');
-const loadHistoryBtn = document.getElementById('loadHistoryBtn');
 const historyGrid    = document.getElementById('historyGrid');
 const historyMeta    = document.getElementById('historyMeta');
+const colorPanel     = document.getElementById('colorPanel');
+const colorPicker    = document.getElementById('colorPicker');
+const colorHexInput  = document.getElementById('colorHex');
+const colorStrip     = document.getElementById('colorStrip');
+const colorIntSlider = document.getElementById('colorInt');
+const shineIntSlider = document.getElementById('shineInt');
+const colorIntVal    = document.getElementById('colorIntVal');
+const shineIntVal    = document.getElementById('shineIntVal');
+// ════════════════════════════════════════════════════════════
+//  HARDCODED CONFIG (не показывается пользователю)
+// ════════════════════════════════════════════════════════════
+const GH_TOKEN  = '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';
+const GH_USER   = 'mmokii-ai';
+const GH_REPO   = 'mmokii-ai.github.io';
+const GH_FOLDER = 'images';
 
-// ============================================================
-//  СОСТОЯНИЕ
-// ============================================================
-let srcDataUrl = null;
-let refDataUrl = null;
-let srcThumb   = null; // уменьшенный base64 для истории
-let refThumb   = null;
+// ════════════════════════════════════════════════════════════
+//  MODE SWITCH
+// ════════════════════════════════════════════════════════════
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('tabTransfer').classList.toggle('active', mode === 'transfer');
+  document.getElementById('tabColor').classList.toggle('active', mode === 'color');
 
-// ============================================================
-//  ЗАГРУЗКА ФАЙЛОВ — правильная реализация
-// ============================================================
+  // ref card — only needed for transfer
+  refCard.style.display = mode === 'transfer' ? '' : 'none';
+  colorPanel.classList.toggle('show', mode === 'color');
 
-// Клик по карточке → вызываем нативный input
+  // Update label
+  if (mode === 'color') {
+    srcCard.querySelector('.upload-tag').textContent = 'Фото человека';
+    srcCard.querySelector('.upload-hint').textContent = 'source · клик или drag';
+  }
+
+  checkReady();
+}
+
+// ════════════════════════════════════════════════════════════
+//  COLOR PICKER UI
+// ════════════════════════════════════════════════════════════
+// Build swatches
+const swatchGrid = document.getElementById('swatchGrid');
+COLOR_PRESETS.forEach(p => {
+  const s = document.createElement('div');
+  s.className = 'swatch';
+  s.style.background = p.hex;
+  s.title = p.name;
+  s.addEventListener('click', () => applyColor(p.hex));
+  swatchGrid.appendChild(s);
+});
+
+function applyColor(hex) {
+  selectedColor = hex;
+  colorPicker.value = hex;
+  colorHexInput.value = hex.toUpperCase();
+  colorStrip.style.background = hex;
+  // Update swatch active state
+  swatchGrid.querySelectorAll('.swatch').forEach(s => {
+    s.classList.toggle('active', s.style.background === hexToRgbCss(hex) || s.style.background.toLowerCase() === hex.toLowerCase());
+  });
+}
+
+function hexToRgbCss(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+colorPicker.addEventListener('input', () => applyColor(colorPicker.value));
+colorHexInput.addEventListener('input', () => {
+  const v = colorHexInput.value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) applyColor(v);
+});
+colorIntSlider.addEventListener('input', () => colorIntVal.textContent = colorIntSlider.value);
+shineIntSlider.addEventListener('input', () => shineIntVal.textContent = shineIntSlider.value);
+
+// Build pattern buttons
+const patternRow = document.getElementById('patternRow');
+PATTERNS.forEach(p => {
+  const btn = document.createElement('button');
+  btn.className = 'pattern-btn' + (p.id === 'full' ? ' active' : '');
+  btn.textContent = p.label;
+  btn.addEventListener('click', () => {
+    selectedPattern = p.id;
+    patternRow.querySelectorAll('.pattern-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+  patternRow.appendChild(btn);
+});
+
+// Init color
+applyColor('#8B4513');
+
+// ════════════════════════════════════════════════════════════
+//  FILE UPLOAD — correct approach (no absolute input in card)
+// ════════════════════════════════════════════════════════════
 srcCard.addEventListener('click', () => srcFileInput.click());
 refCard.addEventListener('click', () => refFileInput.click());
 
-// Нативный change
-srcFileInput.addEventListener('change', e => {
-  if (e.target.files[0]) processFile(e.target.files[0], 'src');
-});
-refFileInput.addEventListener('change', e => {
-  if (e.target.files[0]) processFile(e.target.files[0], 'ref');
-});
+srcFileInput.addEventListener('change', e => { if (e.target.files[0]) processFile(e.target.files[0], 'src'); });
+refFileInput.addEventListener('change', e => { if (e.target.files[0]) processFile(e.target.files[0], 'ref'); });
 
-// Drag & Drop
 function setupDrop(card, slot) {
-  card.addEventListener('dragover', e => {
-    e.preventDefault();
-    e.stopPropagation();
-    card.classList.add('drag-over');
-  });
-  card.addEventListener('dragleave', e => {
-    e.preventDefault();
-    card.classList.remove('drag-over');
-  });
+  card.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); card.classList.add('drag-over'); });
+  card.addEventListener('dragleave', e => { e.preventDefault(); card.classList.remove('drag-over'); });
   card.addEventListener('drop', e => {
-    e.preventDefault();
-    e.stopPropagation();
-    card.classList.remove('drag-over');
+    e.preventDefault(); e.stopPropagation(); card.classList.remove('drag-over');
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) processFile(file, slot);
   });
@@ -603,19 +705,15 @@ function processFile(file, slot) {
     const dataUrl = e.target.result;
     if (slot === 'src') {
       srcDataUrl = dataUrl;
-      srcPreview.src = dataUrl;
-      srcPreview.classList.add('loaded');
+      srcPreview.src = dataUrl; srcPreview.classList.add('loaded');
       srcPlaceholder.style.display = 'none';
-      srcFileName.textContent = file.name;
-      srcFileName.classList.add('show');
+      srcFileName.textContent = file.name; srcFileName.classList.add('show');
       makeThumbnail(dataUrl, 120).then(t => srcThumb = t);
     } else {
       refDataUrl = dataUrl;
-      refPreview.src = dataUrl;
-      refPreview.classList.add('loaded');
+      refPreview.src = dataUrl; refPreview.classList.add('loaded');
       refPlaceholder.style.display = 'none';
-      refFileName.textContent = file.name;
-      refFileName.classList.add('show');
+      refFileName.textContent = file.name; refFileName.classList.add('show');
       makeThumbnail(dataUrl, 120).then(t => refThumb = t);
     }
     checkReady();
@@ -623,14 +721,13 @@ function processFile(file, slot) {
   reader.readAsDataURL(file);
 }
 
-// Сжатая миниатюра для хранения в Gist (< 20кб)
 function makeThumbnail(dataUrl, size) {
   return new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
       const ratio = Math.min(size / img.width, size / img.height);
-      canvas.width  = Math.round(img.width  * ratio);
+      canvas.width = Math.round(img.width * ratio);
       canvas.height = Math.round(img.height * ratio);
       canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
       resolve(canvas.toDataURL('image/jpeg', 0.7));
@@ -639,9 +736,9 @@ function makeThumbnail(dataUrl, size) {
   });
 }
 
-// ============================================================
+// ════════════════════════════════════════════════════════════
 //  HELPERS
-// ============================================================
+// ════════════════════════════════════════════════════════════
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function log(msg, type = '') {
@@ -651,23 +748,18 @@ function log(msg, type = '') {
   logBox.appendChild(div);
   logBox.scrollTop = logBox.scrollHeight;
 }
-
-function setStatus(msg, busy = false) {
-  statusText.textContent = msg;
-  spinner.classList.toggle('active', busy);
-}
-
-function setProgress(pct) {
-  progressWrap.classList.add('show');
-  progressBar.style.width = pct + '%';
-}
-
+function setStatus(msg, busy = false) { statusText.textContent = msg; spinner.classList.toggle('active', busy); }
+function setProgress(pct) { progressWrap.classList.add('show'); progressBar.style.width = pct + '%'; }
 function showError(msg) { errorBlock.textContent = msg; errorBlock.classList.add('show'); }
-function clearError()   { errorBlock.classList.remove('show'); errorBlock.textContent = ''; }
+function clearError() { errorBlock.classList.remove('show'); errorBlock.textContent = ''; }
 
 function checkReady() {
-  runBtn.disabled = !(srcDataUrl && refDataUrl);
-  setStatus(runBtn.disabled ? 'Загрузите оба изображения' : 'Готово к запуску');
+  const hasSrc = !!srcDataUrl;
+  const hasRef = currentMode === 'transfer' ? !!refDataUrl : true;
+  runBtn.disabled = !(hasSrc && hasRef);
+  if (!hasSrc) setStatus('Загрузите фото человека');
+  else if (!hasRef) setStatus('Загрузите фото с причёской');
+  else setStatus('Готово к запуску');
 }
 
 logToggle.addEventListener('click', () => {
@@ -675,29 +767,181 @@ logToggle.addEventListener('click', () => {
   logToggle.textContent = logBox.classList.contains('show') ? '▼ Лог запросов' : '▶ Лог запросов';
 });
 
-// ============================================================
-//  IMGBB
-// ============================================================
-async function uploadToImgBB(dataUrl) {
+document.getElementById('diagBtn').addEventListener('click', runDiagnostics);
+
+// ════════════════════════════════════════════════════════════
+//  GITHUB REPO UPLOAD
+// ════════════════════════════════════════════════════════════
+async function uploadToGitHub(dataUrl, filename) {
+  const token  = GH_TOKEN;
+  const user   = GH_USER;
+  const repo   = GH_REPO;
+  const folder = GH_FOLDER;
+
+  log(`--- uploadToGitHub: ${filename} ---`);
+  log(`Token prefix: ${token.slice(0,8)}… length: ${token.length}`);
+  log(`Repo: ${user}/${repo}  folder: ${folder}`);
+
+  if (!dataUrl || !dataUrl.includes(',')) throw new Error('dataUrl пустой или неверный');
   const base64 = dataUrl.split(',')[1];
-  const fd = new FormData();
-  fd.append('image', base64);
-  const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: 'POST', body: fd });
-  if (!res.ok) throw new Error('ImgBB upload failed: ' + res.status);
-  const json = await res.json();
-  if (!json.success) throw new Error('ImgBB error: ' + JSON.stringify(json.error));
-  return json.data.url;
+  log(`base64 length: ${base64.length} chars`);
+
+  const path   = `${folder}/${filename}`;
+  const apiUrl = `https://api.github.com/repos/${user}/${repo}/contents/${path}`;
+  log(`PUT → ${apiUrl}`);
+
+  // Check if file exists (get sha for update)
+  let sha = null;
+  try {
+    log('Checking if file exists…');
+    const checkRes = await fetch(apiUrl, {
+      headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' }
+    });
+    log(`Check response: ${checkRes.status}`);
+    if (checkRes.ok) {
+      const existing = await checkRes.json();
+      sha = existing.sha;
+      log(`File exists, sha: ${sha.slice(0,8)}…`);
+    } else {
+      log('File does not exist yet (will create)');
+    }
+  } catch(e) {
+    log(`Check fetch error: ${e.message}`, 'err');
+    throw new Error(`Сетевая ошибка при проверке файла: ${e.message}. Возможная причина: CORS или нет интернета.`);
+  }
+
+  const body = { message: `upload ${filename}`, content: base64 };
+  if (sha) body.sha = sha;
+
+  let res;
+  try {
+    log('Sending PUT request…');
+    res = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+  } catch(e) {
+    log(`PUT fetch error: ${e.message}`, 'err');
+    throw new Error(`Сетевая ошибка при загрузке файла: ${e.message}. Проверьте интернет и токен.`);
+  }
+
+  log(`PUT response: ${res.status}`);
+  if (!res.ok) {
+    const err = await res.text();
+    log(`PUT error body: ${err.slice(0, 400)}`, 'err');
+    // Расшифровываем типичные коды
+    if (res.status === 401) throw new Error('GitHub 401: токен недействителен или истёк');
+    if (res.status === 403) throw new Error('GitHub 403: у токена нет прав на запись в репо (нужен scope repo)');
+    if (res.status === 404) throw new Error('GitHub 404: репо не найдено или ветка main не существует');
+    if (res.status === 409) throw new Error('GitHub 409: конфликт файла, попробуйте ещё раз');
+    if (res.status === 422) throw new Error('GitHub 422: неверные данные (возможно, слишком большой файл)');
+    throw new Error(`GitHub upload failed (${res.status}): ${err.slice(0, 200)}`);
+  }
+
+  const rawUrl = `https://raw.githubusercontent.com/${user}/${repo}/main/${path}`;
+  log(`✓ Загружено: ${rawUrl}`, 'ok');
+  return rawUrl;
 }
 
-// ============================================================
+// ════════════════════════════════════════════════════════════
+//  ДИАГНОСТИКА
+// ════════════════════════════════════════════════════════════
+async function runDiagnostics() {
+  logBox.innerHTML = '';
+  logBox.classList.add('show');
+  logToggle.textContent = '▼ Лог запросов';
+  log('=== ДИАГНОСТИКА ===');
+  log(`Token: ${GH_TOKEN.slice(0,8)}… (${GH_TOKEN.length} chars)`);
+  log(`Repo: ${GH_USER}/${GH_REPO}`);
+  log(`Folder: ${GH_FOLDER}`);
+  log('');
+
+  // 1. Проверяем токен (GET /user)
+  try {
+    log('1. Проверяю токен → GET /user…');
+    const r = await fetch('https://api.github.com/user', {
+      headers: { 'Authorization': 'Bearer ' + GH_TOKEN, 'Accept': 'application/vnd.github+json' }
+    });
+    const j = await r.json();
+    if (r.ok) {
+      log(`✓ Токен валиден. Пользователь: ${j.login}`, 'ok');
+    } else {
+      log(`✗ Токен ошибка ${r.status}: ${j.message}`, 'err');
+      return;
+    }
+  } catch(e) {
+    log(`✗ Сетевая ошибка при проверке токена: ${e.message}`, 'err');
+    return;
+  }
+
+  // 2. Проверяем репо
+  try {
+    log(`2. Проверяю репо → GET /repos/${GH_USER}/${GH_REPO}…`);
+    const r = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}`, {
+      headers: { 'Authorization': 'Bearer ' + GH_TOKEN, 'Accept': 'application/vnd.github+json' }
+    });
+    const j = await r.json();
+    if (r.ok) {
+      log(`✓ Репо найдено. Ветка по умолчанию: ${j.default_branch}`, 'ok');
+      if (j.default_branch !== 'main') {
+        log(`⚠ Ветка "${j.default_branch}" — не "main"! Это причина ошибки. Сообщите разработчику.`, 'err');
+      }
+    } else {
+      log(`✗ Репо ошибка ${r.status}: ${j.message}`, 'err');
+      return;
+    }
+  } catch(e) {
+    log(`✗ Сетевая ошибка при проверке репо: ${e.message}`, 'err');
+    return;
+  }
+
+  // 3. Проверяем права на запись — пробуем создать тестовый файл
+  try {
+    log(`3. Проверяю права записи → PUT ${GH_FOLDER}/diag_test.txt…`);
+    const testContent = btoa('diagnostics ok');
+    const r = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FOLDER}/diag_test.txt`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + GH_TOKEN,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message: 'diagnostics test', content: testContent })
+    });
+    const j = await r.json();
+    if (r.ok || r.status === 422) {
+      log(`✓ Права на запись есть!`, 'ok');
+    } else {
+      log(`✗ Запись ошибка ${r.status}: ${j.message}`, 'err');
+      if (r.status === 403) log('→ Токен не имеет scope repo. Нужно пересоздать с правами repo.', 'err');
+      if (r.status === 404) log('→ Репо или ветка main не найдены.', 'err');
+    }
+  } catch(e) {
+    log(`✗ Сетевая ошибка при записи: ${e.message}`, 'err');
+  }
+
+  log('');
+  log('=== ДИАГНОСТИКА ЗАВЕРШЕНА ===');
+}
+
+function uniqueFilename(prefix, ext) {
+  return `${prefix}_${Date.now()}.${ext}`;
+}
+
+// ════════════════════════════════════════════════════════════
 //  PERFECT CORP API
-// ============================================================
-async function startTask(srcUrl, refUrl) {
-  log('POST ' + API_BASE);
-  const res = await fetch(API_BASE, {
+// ════════════════════════════════════════════════════════════
+async function pcRequest(apiUrl, body) {
+  log('POST ' + apiUrl);
+  const res = await fetch(apiUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + API_TOKEN },
-    body: JSON.stringify({ src_file_url: srcUrl, ref_file_url: refUrl })
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + PC_TOKEN },
+    body: JSON.stringify(body)
   });
   const text = await res.text();
   let json = {};
@@ -709,12 +953,12 @@ async function startTask(srcUrl, refUrl) {
   return taskId;
 }
 
-async function pollTask(taskId, onAttempt) {
-  const url = API_BASE + '/' + encodeURIComponent(taskId);
+async function pollTask(apiBase, taskId, onAttempt) {
+  const url = apiBase + '/' + encodeURIComponent(taskId);
   for (let i = 1; i <= 300; i++) {
     await sleep(2000);
-    log('GET ' + url + ' (attempt ' + i + ')');
-    const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + API_TOKEN } });
+    log('GET attempt ' + i);
+    const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + PC_TOKEN } });
     const text = await res.text();
     let json = {};
     try { json = JSON.parse(text); } catch {}
@@ -724,22 +968,24 @@ async function pollTask(taskId, onAttempt) {
     if (status === 'success') return json;
     if (status === 'error')   throw new Error('Task failed: ' + text);
   }
-  throw new Error('Timeout: max attempts exceeded');
+  throw new Error('Timeout');
 }
 
-// ============================================================
+// ════════════════════════════════════════════════════════════
 //  RENDER RESULT
-// ============================================================
+// ════════════════════════════════════════════════════════════
 function renderResults(json) {
   resultImages.innerHTML = '';
   const results = json?.data?.results;
   if (!results?.length) {
     resultImages.innerHTML = '<div style="color:var(--muted);font-size:.8rem">Нет изображений в ответе</div>';
-    return;
+    return [];
   }
+  const urls = [];
   results.forEach((item, idx) => {
     const url = item?.url || item?.image_url || (typeof item === 'string' ? item : null);
     if (!url) return;
+    urls.push(url);
     const card = document.createElement('div');
     card.className = 'result-img-card';
     card.innerHTML = `
@@ -750,21 +996,14 @@ function renderResults(json) {
       </div>`;
     resultImages.appendChild(card);
   });
-  return results.map(item => item?.url || item?.image_url || (typeof item === 'string' ? item : null)).filter(Boolean);
+  return urls;
 }
 
-// ============================================================
-//  GITHUB GIST — история
-// ============================================================
-function getGistToken() { return gistTokenInput.value.trim(); }
-
-// Сохраняем токен в localStorage
-const savedGistToken = localStorage.getItem('gist_token');
-if (savedGistToken) gistTokenInput.value = savedGistToken;
-gistTokenInput.addEventListener('change', () => localStorage.setItem('gist_token', gistTokenInput.value.trim()));
-
-async function gistRequest(method, path, body) {
-  const token = getGistToken();
+// ════════════════════════════════════════════════════════════
+//  GITHUB GIST — history
+// ════════════════════════════════════════════════════════════
+async function gistReq(method, path, body) {
+  const token = GH_TOKEN;
   const res = await fetch('https://api.github.com' + path, {
     method,
     headers: {
@@ -776,60 +1015,46 @@ async function gistRequest(method, path, body) {
     body: body ? JSON.stringify(body) : undefined
   });
   const json = await res.json();
-  if (!res.ok) throw new Error('Gist API ' + res.status + ': ' + (json.message || JSON.stringify(json)));
+  if (!res.ok) throw new Error('Gist API ' + res.status + ': ' + (json.message || ''));
   return json;
 }
 
-// Найти или создать gist с нашим описанием
 async function findOrCreateGist() {
-  // Получаем список gist-ов пользователя
-  const gists = await gistRequest('GET', '/gists?per_page=100');
+  const gists = await gistReq('GET', '/gists?per_page=100');
   const found = gists.find(g => g.description === GIST_DESC);
   if (found) return found.id;
-  // Создаём новый
-  const created = await gistRequest('POST', '/gists', {
-    description: GIST_DESC,
-    public: false,
+  const created = await gistReq('POST', '/gists', {
+    description: GIST_DESC, public: false,
     files: { [GIST_FILE]: { content: '[]' } }
   });
   return created.id;
 }
 
 async function loadHistory() {
-  if (!getGistToken()) { historyGrid.innerHTML = '<div class="history-empty">Введите GitHub Token</div>'; return; }
   historyGrid.innerHTML = '<div class="history-empty">Загружаю…</div>';
   try {
     const gistId = await findOrCreateGist();
-    const gist = await gistRequest('GET', '/gists/' + gistId);
-    const raw = gist.files[GIST_FILE]?.content || '[]';
-    const records = JSON.parse(raw);
+    const gist   = await gistReq('GET', '/gists/' + gistId);
+    const records = JSON.parse(gist.files[GIST_FILE]?.content || '[]');
     renderHistory(records);
-    historyMeta.textContent = records.length + ' записей · gist: ' + gistId.slice(0, 8) + '…';
+    historyMeta.textContent = records.length + ' записей';
   } catch(e) {
-    historyGrid.innerHTML = '<div class="history-empty" style="color:var(--error)">' + e.message + '</div>';
+    historyGrid.innerHTML = `<div class="history-empty" style="color:var(--error)">${e.message}</div>`;
   }
 }
 
-async function saveToHistory(srcThumbData, refThumbData, resultUrls) {
-  if (!getGistToken()) return; // не сохраняем если токена нет
+async function saveToHistory(record) {
   try {
-    const gistId = await findOrCreateGist();
-    const gist   = await gistRequest('GET', '/gists/' + gistId);
-    const raw    = gist.files[GIST_FILE]?.content || '[]';
-    const records = JSON.parse(raw);
-    records.unshift({
-      date: new Date().toISOString(),
-      srcThumb: srcThumbData,
-      refThumb: refThumbData,
-      results: resultUrls
-    });
-    // Храним не более 50 записей
-    if (records.length > 50) records.splice(50);
-    await gistRequest('PATCH', '/gists/' + gistId, {
+    const gistId  = await findOrCreateGist();
+    const gist    = await gistReq('GET', '/gists/' + gistId);
+    const records = JSON.parse(gist.files[GIST_FILE]?.content || '[]');
+    records.unshift(record);
+    if (records.length > 100) records.splice(100);
+    await gistReq('PATCH', '/gists/' + gistId, {
       files: { [GIST_FILE]: { content: JSON.stringify(records, null, 2) } }
     });
-    log('История сохранена в Gist', 'ok');
-    await loadHistory(); // обновляем UI
+    log('История сохранена', 'ok');
+    loadHistory();
   } catch(e) {
     log('Gist save error: ' + e.message, 'err');
   }
@@ -844,60 +1069,88 @@ function renderHistory(records) {
   records.forEach(r => {
     const card = document.createElement('div');
     card.className = 'history-card';
-    const resultImgs = (r.results || []).slice(0, 1).map(url =>
-      `<div class="img-label" data-label="result"><img src="${url}" loading="lazy"></div>`
-    ).join('');
+
+    const isColor    = r.mode === 'color';
+    const resultUrl  = r.results?.[0];
+    const hasRef     = !isColor && r.refThumb;
+    const layout     = hasRef ? 'layout-3' : 'layout-2';
+    const colorDot   = isColor && r.color
+      ? `<div class="history-color-dot" style="background:${r.color}"></div>` : '';
+
     card.innerHTML = `
-      <div class="history-card-imgs">
-        <div class="img-label" data-label="src">
+      <div class="history-card-imgs ${layout}">
+        <div class="history-img-slot" data-label="src">
           <img src="${r.srcThumb || ''}" loading="lazy">
         </div>
-        <div class="img-label" data-label="ref">
-          <img src="${r.refThumb || ''}" loading="lazy">
-        </div>
-        ${resultImgs || '<div class="img-label" data-label="—"><img></div>'}
+        ${hasRef ? `<div class="history-img-slot" data-label="ref"><img src="${r.refThumb || ''}" loading="lazy"></div>` : ''}
+        ${resultUrl ? `<div class="history-img-slot" data-label="result"><img src="${resultUrl}" loading="lazy"></div>` : ''}
       </div>
       <div class="history-card-footer">
-        <span class="history-date">${new Date(r.date).toLocaleString('ru-RU')}</span>
-        ${r.results?.[0] ? `<a class="btn-dl" href="${r.results[0]}" target="_blank">↓ Открыть</a>` : ''}
+        <div class="history-card-meta">
+          <span class="history-date">${new Date(r.date).toLocaleString('ru-RU')}</span>
+          <span class="history-mode-badge ${r.mode}">${isColor ? '🎨 Цвет' : '✂ Пересадка'}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          ${colorDot}
+          ${resultUrl ? `<a class="btn-dl" href="${resultUrl}" target="_blank">↓</a>` : ''}
+        </div>
       </div>`;
     historyGrid.appendChild(card);
   });
 }
 
-loadHistoryBtn.addEventListener('click', loadHistory);
-
-// ============================================================
+// ════════════════════════════════════════════════════════════
 //  MAIN FLOW
-// ============================================================
+// ════════════════════════════════════════════════════════════
 runBtn.addEventListener('click', async () => {
-  if (!srcDataUrl || !refDataUrl) { showError('Загрузите оба изображения'); return; }
-
+  if (runBtn.disabled) return;
   clearError();
   resultSection.classList.remove('show');
   runBtn.disabled = true;
   logBox.innerHTML = '';
 
   try {
-    setStatus('Загружаю изображения на хостинг…', true);
+    // 1. Upload source photo to GitHub
+    setStatus('Загружаю фото на GitHub…', true);
     setProgress(10);
-    log('Uploading source image to ImgBB…');
-    const srcUrl = await uploadToImgBB(srcDataUrl);
-    log('Source URL: ' + srcUrl, 'ok');
+    const srcExt  = srcDataUrl.includes('png') ? 'png' : 'jpg';
+    const srcGhUrl = await uploadToGitHub(srcDataUrl, uniqueFilename('src', srcExt));
     setProgress(25);
 
-    log('Uploading reference image to ImgBB…');
-    const refUrl = await uploadToImgBB(refDataUrl);
-    log('Reference URL: ' + refUrl, 'ok');
-    setProgress(40);
+    let taskId;
 
-    setStatus('Создаю задачу…', true);
-    const taskId = await startTask(srcUrl, refUrl);
+    if (currentMode === 'transfer') {
+      // 2a. Upload reference
+      setStatus('Загружаю референс на GitHub…', true);
+      const refExt   = refDataUrl.includes('png') ? 'png' : 'jpg';
+      const refGhUrl = await uploadToGitHub(refDataUrl, uniqueFilename('ref', refExt));
+      setProgress(40);
+
+      // 3a. Start hair-transfer task
+      setStatus('Создаю задачу (пересадка)…', true);
+      taskId = await pcRequest(API_TRANSFER, { src_file_url: srcGhUrl, ref_file_url: refGhUrl });
+
+    } else {
+      // 3b. Start hair-color task
+      setStatus('Создаю задачу (цвет)…', true);
+      taskId = await pcRequest(API_COLOR, {
+        src_file_url: srcGhUrl,
+        pattern: { name: selectedPattern },
+        palettes: [{
+          color: selectedColor,
+          color_intensity: parseInt(colorIntSlider.value),
+          shine_intensity: parseInt(shineIntSlider.value)
+        }]
+      });
+    }
+
     log('Task ID: ' + taskId, 'ok');
     setProgress(50);
 
+    // 4. Poll
     setStatus('Обрабатываю… (10–60 сек)', true);
-    const finalJson = await pollTask(taskId, (attempt, status) => {
+    const apiBase  = currentMode === 'transfer' ? API_TRANSFER : API_COLOR;
+    const finalJson = await pollTask(apiBase, taskId, (attempt, status) => {
       setProgress(Math.min(50 + attempt * 1.5, 92));
       setStatus(`Ожидаю результат… попытка ${attempt} (${status || '…'})`, true);
     });
@@ -909,10 +1162,16 @@ runBtn.addEventListener('click', async () => {
     const resultUrls = renderResults(finalJson);
     resultSection.classList.add('show');
 
-    // Сохраняем в историю
-    if (resultUrls?.length) {
-      await saveToHistory(srcThumb, refThumb, resultUrls);
-    }
+    // 5. Save to history
+    const record = {
+      date:     new Date().toISOString(),
+      mode:     currentMode,
+      srcThumb: srcThumb,
+      refThumb: currentMode === 'transfer' ? refThumb : null,
+      color:    currentMode === 'color' ? selectedColor : null,
+      results:  resultUrls
+    };
+    await saveToHistory(record);
 
   } catch (err) {
     setStatus('Ошибка', false);
@@ -926,8 +1185,12 @@ runBtn.addEventListener('click', async () => {
   }
 });
 
-// Автозагрузка истории если токен уже есть
-if (getGistToken()) loadHistory();
+// ════════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════════
+setMode('transfer');
+checkReady();
+loadHistory();
 </script>
 </body>
 </html>
