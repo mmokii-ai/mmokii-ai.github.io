@@ -348,6 +348,62 @@
 
   .divider { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
 
+  /* ── TOKEN GATE ─────────────────────────────────────────── */
+  .token-gate {
+    position: fixed; inset: 0; z-index: 500;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem;
+  }
+  .token-gate.hidden { display: none; }
+  .token-box {
+    width: 100%; max-width: 480px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent);
+    padding: 2.5rem;
+    display: flex; flex-direction: column; gap: 1.5rem;
+  }
+  .token-box h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem; letter-spacing: 0.08em; color: var(--accent);
+  }
+  .token-box p {
+    font-size: 0.85rem; color: var(--muted); line-height: 1.7;
+  }
+  .token-box p a { color: var(--accent2); }
+  .token-input-row { display: flex; gap: 0.75rem; }
+  .token-input-row input {
+    flex: 1;
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); font-family: 'DM Mono', monospace;
+    font-size: 0.82rem; padding: 0.65rem 0.9rem; outline: none;
+    transition: border-color 0.2s;
+  }
+  .token-input-row input:focus { border-color: var(--accent); }
+  .btn-save-token {
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem;
+    letter-spacing: 0.08em; color: var(--bg); background: var(--accent);
+    border: none; padding: 0.65rem 1.5rem; cursor: pointer;
+    transition: background 0.15s; white-space: nowrap;
+  }
+  .btn-save-token:hover { background: #d8ff70; }
+  .token-hint {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    color: var(--muted); line-height: 1.6;
+  }
+  /* Reset button in header */
+  .btn-reset-token {
+    margin-left: auto;
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); background: none;
+    border: 1px solid var(--border);
+    padding: 0.3rem 0.7rem; cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .btn-reset-token:hover { color: var(--error); border-color: var(--error); }
+
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); }
@@ -365,7 +421,27 @@
 <header>
   <h1>Hair Studio</h1>
   <span>Андрей Туганов v3.0</span>
+  <button class="btn-reset-token" id="resetTokenBtn" title="Сбросить токен и ввести новый">🔑 Сменить токен</button>
 </header>
+
+<!-- TOKEN GATE — показывается если токен не сохранён -->
+<div class="token-gate" id="tokenGate">
+  <div class="token-box">
+    <h2>GitHub Token</h2>
+    <p>
+      Для работы нужен персональный токен GitHub со scope <strong>repo</strong>.<br>
+      Токен сохраняется только в вашем браузере и <strong>никуда не отправляется</strong> кроме api.github.com.
+    </p>
+    <div class="token-input-row">
+      <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+      <button class="btn-save-token" id="saveTokenBtn">Сохранить</button>
+    </div>
+    <div class="token-hint">
+      Создать токен: github.com → Settings → Developer settings → Personal access tokens → Tokens (classic)<br>
+      Поставьте галочку <strong>repo</strong> → Generate token → скопируйте ghp_...
+    </div>
+  </div>
+</div>
 
 <!-- Hidden file inputs — OUTSIDE cards, no overflow:hidden parent -->
 <input type="file" id="srcFile" class="hidden-file-input" accept="image/*">
@@ -593,12 +669,45 @@ const shineIntSlider = document.getElementById('shineInt');
 const colorIntVal    = document.getElementById('colorIntVal');
 const shineIntVal    = document.getElementById('shineIntVal');
 // ════════════════════════════════════════════════════════════
-//  HARDCODED CONFIG (не показывается пользователю)
+//  CONFIG — токен из localStorage, остальное зашито
 // ════════════════════════════════════════════════════════════
-const GH_TOKEN  = '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';
 const GH_USER   = 'mmokii-ai';
 const GH_REPO   = 'mmokii-ai.github.io';
 const GH_FOLDER = 'images';
+function getToken() { return localStorage.getItem('hs_gh_token') || ''; }
+
+// ── TOKEN GATE ──────────────────────────────────────────────
+const tokenGate     = document.getElementById('tokenGate');
+const tokenInput    = document.getElementById('tokenInput');
+const saveTokenBtn  = document.getElementById('saveTokenBtn');
+const resetTokenBtn = document.getElementById('resetTokenBtn');
+
+function showGate()  { tokenGate.classList.remove('hidden'); }
+function hideGate()  { tokenGate.classList.add('hidden'); }
+
+function initTokenGate() {
+  if (getToken()) { hideGate(); } else { showGate(); }
+}
+
+saveTokenBtn.addEventListener('click', () => {
+  const val = tokenInput.value.trim();
+  if (!val.startsWith('ghp_') && !val.startsWith('github_pat_')) {
+    tokenInput.style.borderColor = 'var(--error)';
+    return;
+  }
+  localStorage.setItem('hs_gh_token', val);
+  hideGate();
+  checkReady();
+  loadHistory();
+});
+tokenInput.addEventListener('keydown', e => { if (e.key === 'Enter') saveTokenBtn.click(); });
+tokenInput.addEventListener('input',   () => { tokenInput.style.borderColor = ''; });
+
+resetTokenBtn.addEventListener('click', () => {
+  localStorage.removeItem('hs_gh_token');
+  tokenInput.value = '';
+  showGate();
+});
 
 // ════════════════════════════════════════════════════════════
 //  MODE SWITCH
@@ -773,13 +882,13 @@ document.getElementById('diagBtn').addEventListener('click', runDiagnostics);
 //  GITHUB REPO UPLOAD
 // ════════════════════════════════════════════════════════════
 async function uploadToGitHub(dataUrl, filename) {
-  const token  = GH_TOKEN;
+  const token  = getToken();
   const user   = GH_USER;
   const repo   = GH_REPO;
   const folder = GH_FOLDER;
 
   log(`--- uploadToGitHub: ${filename} ---`);
-  log(`Token prefix: ${token.slice(0,8)}… length: ${token.length}`);
+  log(`Token prefix: ${getToken().slice(0,8)}… length: ${getToken().length}`);
   log(`Repo: ${user}/${repo}  folder: ${folder}`);
 
   if (!dataUrl || !dataUrl.includes(',')) throw new Error('dataUrl пустой или неверный');
@@ -856,16 +965,16 @@ async function runDiagnostics() {
   logBox.classList.add('show');
   logToggle.textContent = '▼ Лог запросов';
   log('=== ДИАГНОСТИКА ===');
-  log(`Token: ${GH_TOKEN.slice(0,8)}… (${GH_TOKEN.length} chars)`);
+  log(`Token: ${getToken().slice(0,8)}… (${getToken().length} chars)`);
   log(`Repo: ${GH_USER}/${GH_REPO}`);
   log(`Folder: ${GH_FOLDER}`);
   log('');
 
-  // 1. Проверяем токен (GET /user)
+  // 1. Проверяем токен
   try {
     log('1. Проверяю токен → GET /user…');
     const r = await fetch('https://api.github.com/user', {
-      headers: { 'Authorization': 'Bearer ' + GH_TOKEN, 'Accept': 'application/vnd.github+json' }
+      headers: { 'Authorization': 'Bearer ' + getToken(), 'Accept': 'application/vnd.github+json' }
     });
     const j = await r.json();
     if (r.ok) {
@@ -875,7 +984,7 @@ async function runDiagnostics() {
       return;
     }
   } catch(e) {
-    log(`✗ Сетевая ошибка при проверке токена: ${e.message}`, 'err');
+    log(`✗ Сетевая ошибка: ${e.message}`, 'err');
     return;
   }
 
@@ -883,50 +992,51 @@ async function runDiagnostics() {
   try {
     log(`2. Проверяю репо → GET /repos/${GH_USER}/${GH_REPO}…`);
     const r = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}`, {
-      headers: { 'Authorization': 'Bearer ' + GH_TOKEN, 'Accept': 'application/vnd.github+json' }
+      headers: { 'Authorization': 'Bearer ' + getToken(), 'Accept': 'application/vnd.github+json' }
     });
     const j = await r.json();
     if (r.ok) {
       log(`✓ Репо найдено. Ветка по умолчанию: ${j.default_branch}`, 'ok');
       if (j.default_branch !== 'main') {
-        log(`⚠ Ветка "${j.default_branch}" — не "main"! Это причина ошибки. Сообщите разработчику.`, 'err');
+        log(`⚠ Ветка "${j.default_branch}" — не "main"! Сообщите разработчику.`, 'err');
       }
     } else {
       log(`✗ Репо ошибка ${r.status}: ${j.message}`, 'err');
       return;
     }
   } catch(e) {
-    log(`✗ Сетевая ошибка при проверке репо: ${e.message}`, 'err');
+    log(`✗ Сетевая ошибка: ${e.message}`, 'err');
     return;
   }
 
-  // 3. Проверяем права на запись — пробуем создать тестовый файл
+  // 3. Проверяем права на запись
   try {
-    log(`3. Проверяю права записи → PUT ${GH_FOLDER}/diag_test.txt…`);
-    const testContent = btoa('diagnostics ok');
-    const r = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FOLDER}/diag_test.txt`, {
+    log(`3. Проверяю права записи…`);
+    const testContent = btoa('diagnostics ok ' + Date.now());
+    const apiUrl = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FOLDER}/.diag`;
+    const r = await fetch(apiUrl, {
       method: 'PUT',
       headers: {
-        'Authorization': 'Bearer ' + GH_TOKEN,
+        'Authorization': 'Bearer ' + getToken(),
         'Accept': 'application/vnd.github+json',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ message: 'diagnostics test', content: testContent })
     });
-    const j = await r.json();
     if (r.ok || r.status === 422) {
       log(`✓ Права на запись есть!`, 'ok');
     } else {
+      const j = await r.json();
       log(`✗ Запись ошибка ${r.status}: ${j.message}`, 'err');
-      if (r.status === 403) log('→ Токен не имеет scope repo. Нужно пересоздать с правами repo.', 'err');
+      if (r.status === 403) log('→ Токен не имеет scope repo. Пересоздайте с правами repo.', 'err');
       if (r.status === 404) log('→ Репо или ветка main не найдены.', 'err');
     }
   } catch(e) {
-    log(`✗ Сетевая ошибка при записи: ${e.message}`, 'err');
+    log(`✗ Сетевая ошибка: ${e.message}`, 'err');
   }
 
   log('');
-  log('=== ДИАГНОСТИКА ЗАВЕРШЕНА ===');
+  log('=== ГОТОВО ===');
 }
 
 function uniqueFilename(prefix, ext) {
@@ -1003,7 +1113,7 @@ function renderResults(json) {
 //  GITHUB GIST — history
 // ════════════════════════════════════════════════════════════
 async function gistReq(method, path, body) {
-  const token = GH_TOKEN;
+  const token = getToken();
   const res = await fetch('https://api.github.com' + path, {
     method,
     headers: {
@@ -1031,6 +1141,7 @@ async function findOrCreateGist() {
 }
 
 async function loadHistory() {
+  if (!getToken()) return;
   historyGrid.innerHTML = '<div class="history-empty">Загружаю…</div>';
   try {
     const gistId = await findOrCreateGist();
@@ -1188,6 +1299,7 @@ runBtn.addEventListener('click', async () => {
 // ════════════════════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════════════════════
+initTokenGate();
 setMode('transfer');
 checkReady();
 loadHistory();
