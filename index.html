@@ -567,9 +567,9 @@
 
   <hr class="divider">
 
-  <!-- LOG — открыт по умолчанию для диагностики -->
-  <button class="log-toggle" id="logToggle">▼ Лог запросов</button>
-  <div class="log-box show" id="logBox"></div>
+  <!-- LOG — закрыт по умолчанию -->
+  <button class="log-toggle" id="logToggle">▶ Лог запросов</button>
+  <div class="log-box" id="logBox"></div>
 
   <!-- ── HISTORY ── -->
   <div class="history-section">
@@ -887,36 +887,21 @@ async function uploadToGitHub(dataUrl, filename) {
   const repo   = GH_REPO;
   const folder = GH_FOLDER;
 
-  log(`--- uploadToGitHub: ${filename} ---`);
-  log(`Token prefix: ${getToken().slice(0,8)}… length: ${getToken().length}`);
-  log(`Repo: ${user}/${repo}  folder: ${folder}`);
-
-  if (!dataUrl || !dataUrl.includes(',')) throw new Error('dataUrl пустой или неверный');
+  if (!dataUrl || !dataUrl.includes(',')) throw new Error('Файл не загружен');
   const base64 = dataUrl.split(',')[1];
-  log(`base64 length: ${base64.length} chars`);
-
   const path   = `${folder}/${filename}`;
   const apiUrl = `https://api.github.com/repos/${user}/${repo}/contents/${path}`;
-  log(`PUT → ${apiUrl}`);
 
-  // Check if file exists (get sha for update)
+  log(`Загружаю ${filename} на GitHub…`);
+
   let sha = null;
   try {
-    log('Checking if file exists…');
     const checkRes = await fetch(apiUrl, {
       headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' }
     });
-    log(`Check response: ${checkRes.status}`);
-    if (checkRes.ok) {
-      const existing = await checkRes.json();
-      sha = existing.sha;
-      log(`File exists, sha: ${sha.slice(0,8)}…`);
-    } else {
-      log('File does not exist yet (will create)');
-    }
+    if (checkRes.ok) { sha = (await checkRes.json()).sha; }
   } catch(e) {
-    log(`Check fetch error: ${e.message}`, 'err');
-    throw new Error(`Сетевая ошибка при проверке файла: ${e.message}. Возможная причина: CORS или нет интернета.`);
+    throw new Error(`Сетевая ошибка: ${e.message}`);
   }
 
   const body = { message: `upload ${filename}`, content: base64 };
@@ -924,7 +909,6 @@ async function uploadToGitHub(dataUrl, filename) {
 
   let res;
   try {
-    log('Sending PUT request…');
     res = await fetch(apiUrl, {
       method: 'PUT',
       headers: {
@@ -935,25 +919,19 @@ async function uploadToGitHub(dataUrl, filename) {
       body: JSON.stringify(body)
     });
   } catch(e) {
-    log(`PUT fetch error: ${e.message}`, 'err');
-    throw new Error(`Сетевая ошибка при загрузке файла: ${e.message}. Проверьте интернет и токен.`);
+    throw new Error(`Ошибка загрузки: ${e.message}`);
   }
 
-  log(`PUT response: ${res.status}`);
   if (!res.ok) {
     const err = await res.text();
-    log(`PUT error body: ${err.slice(0, 400)}`, 'err');
-    // Расшифровываем типичные коды
-    if (res.status === 401) throw new Error('GitHub 401: токен недействителен или истёк');
-    if (res.status === 403) throw new Error('GitHub 403: у токена нет прав на запись в репо (нужен scope repo)');
-    if (res.status === 404) throw new Error('GitHub 404: репо не найдено или ветка main не существует');
-    if (res.status === 409) throw new Error('GitHub 409: конфликт файла, попробуйте ещё раз');
-    if (res.status === 422) throw new Error('GitHub 422: неверные данные (возможно, слишком большой файл)');
-    throw new Error(`GitHub upload failed (${res.status}): ${err.slice(0, 200)}`);
+    if (res.status === 401) throw new Error('GitHub 401: токен недействителен');
+    if (res.status === 403) throw new Error('GitHub 403: нет прав записи (нужен scope repo)');
+    if (res.status === 404) throw new Error('GitHub 404: репо не найдено или ветка не main');
+    throw new Error(`GitHub ${res.status}: ${err.slice(0, 200)}`);
   }
 
   const rawUrl = `https://raw.githubusercontent.com/${user}/${repo}/main/${path}`;
-  log(`✓ Загружено: ${rawUrl}`, 'ok');
+  log(`✓ Фото загружено`, 'ok');
   return rawUrl;
 }
 
@@ -1047,7 +1025,7 @@ function uniqueFilename(prefix, ext) {
 //  PERFECT CORP API
 // ════════════════════════════════════════════════════════════
 async function pcRequest(apiUrl, body) {
-  log('POST ' + apiUrl);
+  log('Отправляю задачу в API…');
   const res = await fetch(apiUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + PC_TOKEN },
@@ -1056,10 +1034,10 @@ async function pcRequest(apiUrl, body) {
   const text = await res.text();
   let json = {};
   try { json = JSON.parse(text); } catch {}
-  log('Response ' + res.status + ': ' + text.slice(0, 200), res.ok ? 'ok' : 'err');
   if (!res.ok) throw new Error('API error ' + res.status + ': ' + text);
   const taskId = json?.data?.task_id;
-  if (!taskId) throw new Error('task_id not found: ' + text);
+  if (!taskId) throw new Error('task_id не найден: ' + text);
+  log('Задача создана, ожидаю результат…');
   return taskId;
 }
 
@@ -1067,18 +1045,13 @@ async function pollTask(apiBase, taskId, onAttempt) {
   const url = apiBase + '/' + encodeURIComponent(taskId);
   for (let i = 1; i <= 300; i++) {
     await sleep(2000);
-    log('GET attempt ' + i);
     const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + PC_TOKEN } });
     const text = await res.text();
     let json = {};
     try { json = JSON.parse(text); } catch {}
     const status = json?.data?.task_status;
-    log('Status: ' + status, status === 'success' ? 'ok' : status === 'error' ? 'err' : '');
     onAttempt(i, status);
-    if (status === 'success') {
-      log('RAW response: ' + text, 'ok');
-      return json;
-    }
+    if (status === 'success') return json;
     if (status === 'error')   throw new Error('Task failed: ' + text);
   }
   throw new Error('Timeout');
@@ -1089,33 +1062,20 @@ async function pollTask(apiBase, taskId, onAttempt) {
 // ════════════════════════════════════════════════════════════
 function renderResults(json) {
   resultImages.innerHTML = '';
-  log('renderResults data keys: ' + JSON.stringify(Object.keys(json?.data || {})));
 
   const results = json?.data?.results;
-  log('results value: ' + JSON.stringify(results));
 
-  if (!results) {
-    resultImages.innerHTML = '<div style="color:var(--muted);font-size:.8rem">Поле results отсутствует в ответе</div>';
-    return [];
-  }
-
-  // results может быть массивом объектов, массивом строк, или одним объектом
-  const items = Array.isArray(results) ? results : [results];
+  // results может быть объектом {url:...} или массивом [{url:...}]
+  const items = !results ? [] : Array.isArray(results) ? results : [results];
 
   if (!items.length) {
-    resultImages.innerHTML = '<div style="color:var(--muted);font-size:.8rem">results пустой массив</div>';
+    resultImages.innerHTML = '<div style="color:var(--muted);font-size:.8rem">Нет изображений в ответе</div>';
     return [];
   }
 
   const urls = [];
   items.forEach((item, idx) => {
-    // Пробуем все известные варианты поля с URL
-    const url = typeof item === 'string'
-      ? item
-      : (item?.url || item?.image_url || item?.output_url || item?.file_url
-         || item?.result_url || item?.src_file_url || item?.download_url
-         || Object.values(item || {}).find(v => typeof v === 'string' && v.startsWith('http')));
-    log(`result[${idx}] url: ${url} (raw: ${JSON.stringify(item)})`);
+    const url = typeof item === 'string' ? item : item?.url || item?.image_url || null;
     if (!url) return;
     urls.push(url);
     const card = document.createElement('div');
@@ -1128,10 +1088,6 @@ function renderResults(json) {
       </div>`;
     resultImages.appendChild(card);
   });
-
-  if (!urls.length) {
-    resultImages.innerHTML = `<div style="color:var(--muted);font-size:.8rem">Не удалось найти URL в results. Смотрите лог.</div>`;
-  }
   return urls;
 }
 
