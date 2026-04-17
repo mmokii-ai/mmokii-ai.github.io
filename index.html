@@ -1075,7 +1075,10 @@ async function pollTask(apiBase, taskId, onAttempt) {
     const status = json?.data?.task_status;
     log('Status: ' + status, status === 'success' ? 'ok' : status === 'error' ? 'err' : '');
     onAttempt(i, status);
-    if (status === 'success') return json;
+    if (status === 'success') {
+      log('RAW response: ' + text, 'ok');
+      return json;
+    }
     if (status === 'error')   throw new Error('Task failed: ' + text);
   }
   throw new Error('Timeout');
@@ -1086,14 +1089,33 @@ async function pollTask(apiBase, taskId, onAttempt) {
 // ════════════════════════════════════════════════════════════
 function renderResults(json) {
   resultImages.innerHTML = '';
+  log('renderResults data keys: ' + JSON.stringify(Object.keys(json?.data || {})));
+
   const results = json?.data?.results;
-  if (!results?.length) {
-    resultImages.innerHTML = '<div style="color:var(--muted);font-size:.8rem">Нет изображений в ответе</div>';
+  log('results value: ' + JSON.stringify(results));
+
+  if (!results) {
+    resultImages.innerHTML = '<div style="color:var(--muted);font-size:.8rem">Поле results отсутствует в ответе</div>';
     return [];
   }
+
+  // results может быть массивом объектов, массивом строк, или одним объектом
+  const items = Array.isArray(results) ? results : [results];
+
+  if (!items.length) {
+    resultImages.innerHTML = '<div style="color:var(--muted);font-size:.8rem">results пустой массив</div>';
+    return [];
+  }
+
   const urls = [];
-  results.forEach((item, idx) => {
-    const url = item?.url || item?.image_url || (typeof item === 'string' ? item : null);
+  items.forEach((item, idx) => {
+    // Пробуем все известные варианты поля с URL
+    const url = typeof item === 'string'
+      ? item
+      : (item?.url || item?.image_url || item?.output_url || item?.file_url
+         || item?.result_url || item?.src_file_url || item?.download_url
+         || Object.values(item || {}).find(v => typeof v === 'string' && v.startsWith('http')));
+    log(`result[${idx}] url: ${url} (raw: ${JSON.stringify(item)})`);
     if (!url) return;
     urls.push(url);
     const card = document.createElement('div');
@@ -1106,6 +1128,10 @@ function renderResults(json) {
       </div>`;
     resultImages.appendChild(card);
   });
+
+  if (!urls.length) {
+    resultImages.innerHTML = `<div style="color:var(--muted);font-size:.8rem">Не удалось найти URL в results. Смотрите лог.</div>`;
+  }
   return urls;
 }
 
