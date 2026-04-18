@@ -659,37 +659,21 @@
   <!-- ANIMATIONS -->
   <div class="anim-section" id="animSection">
     <div class="anim-header">
-      <h3>✨ Анимация причёски</h3>
+      <h3>🌬 Анимация причёски</h3>
     </div>
-    <div class="anim-grid">
+    <div style="max-width:360px;">
       <div class="anim-card">
         <div class="anim-card-label">
-          <span>🌬 Ветер</span>
-          <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted)">wind</span>
+          <span>Ветер развевает волосы</span>
         </div>
         <div class="anim-canvas-wrap" id="windWrap">
           <div class="anim-building" id="windBuilding">
-            <div class="anim-building-text" id="windText">генерирую…</div>
+            <div class="anim-building-text" id="windText">генерирую GIF…</div>
             <div class="anim-building-bar"><div class="anim-building-fill" id="windFill"></div></div>
           </div>
         </div>
         <div class="anim-footer">
           <a class="btn-dl" id="windDownload" style="display:none">↓ Скачать GIF</a>
-        </div>
-      </div>
-      <div class="anim-card">
-        <div class="anim-card-label">
-          <span>✨ Блеск</span>
-          <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted)">shimmer</span>
-        </div>
-        <div class="anim-canvas-wrap" id="shimmerWrap">
-          <div class="anim-building" id="shimmerBuilding">
-            <div class="anim-building-text" id="shimmerText">ожидание…</div>
-            <div class="anim-building-bar"><div class="anim-building-fill" id="shimmerFill"></div></div>
-          </div>
-        </div>
-        <div class="anim-footer">
-          <a class="btn-dl" id="shimmerDownload" style="display:none">↓ Скачать GIF</a>
         </div>
       </div>
     </div>
@@ -718,17 +702,14 @@
 <div class="hist-modal" id="histModal">
   <div class="hist-modal-box">
     <button class="hist-modal-close" id="histModalClose">✕</button>
-    <div class="hist-modal-title">Анимация результата</div>
+    <div class="hist-modal-title">🌬 Анимация причёски</div>
     <img class="hist-modal-orig" id="histModalImg" src="" alt="result">
-    <div class="anim-grid">
+    <div style="max-width:360px;">
       <div class="anim-card">
-        <div class="anim-card-label">
-          <span>🌬 Ветер</span>
-          <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted)">wind</span>
-        </div>
+        <div class="anim-card-label"><span>Ветер развевает волосы</span></div>
         <div class="anim-canvas-wrap" id="mWindWrap">
           <div class="anim-building" id="mWindBuilding">
-            <div class="anim-building-text" id="mWindText">генерирую…</div>
+            <div class="anim-building-text" id="mWindText">генерирую GIF…</div>
             <div class="anim-building-bar"><div class="anim-building-fill" id="mWindFill"></div></div>
           </div>
         </div>
@@ -736,24 +717,11 @@
           <a class="btn-dl" id="mWindDownload" style="display:none">↓ Скачать GIF</a>
         </div>
       </div>
-      <div class="anim-card">
-        <div class="anim-card-label">
-          <span>✨ Блеск</span>
-          <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted)">shimmer</span>
-        </div>
-        <div class="anim-canvas-wrap" id="mShimmerWrap">
-          <div class="anim-building" id="mShimmerBuilding">
-            <div class="anim-building-text" id="mShimmerText">ожидание…</div>
-            <div class="anim-building-bar"><div class="anim-building-fill" id="mShimmerFill"></div></div>
-          </div>
-        </div>
-        <div class="anim-footer">
-          <a class="btn-dl" id="mShimmerDownload" style="display:none">↓ Скачать GIF</a>
-        </div>
-      </div>
     </div>
   </div>
 </div>
+
+<script>
 // ════════════════════════════════════════════════════════════
 //  CONFIG
 // ════════════════════════════════════════════════════════════
@@ -1564,35 +1532,21 @@ function openHistoryAnimation(resultUrl) {
   histModalImg.src = resultUrl;
   histModal.classList.add('open');
 
-  // Сбрасываем старые canvas/img в модальных wrap-ах
-  ['mWindWrap','mShimmerWrap'].forEach(id => {
-    const w = document.getElementById(id);
-    [...w.children].forEach(c => { if (!c.classList.contains('anim-building')) c.remove(); });
-  });
-  ['mWindBuilding','mShimmerBuilding'].forEach(id => document.getElementById(id).style.display = 'flex');
-  ['mWindDownload','mShimmerDownload'].forEach(id => document.getElementById(id).style.display = 'none');
-  ['mWindFill','mShimmerFill'].forEach(id => document.getElementById(id).style.width = '0%');
-  document.getElementById('mWindText').textContent    = 'генерирую…';
-  document.getElementById('mShimmerText').textContent = 'ожидание…';
+  const wrap = document.getElementById('mWindWrap');
+  [...wrap.children].forEach(c => { if (!c.classList.contains('anim-building')) c.remove(); });
+  document.getElementById('mWindBuilding').style.display = 'flex';
+  document.getElementById('mWindDownload').style.display = 'none';
+  document.getElementById('mWindFill').style.width = '0%';
+  document.getElementById('mWindText').textContent = 'генерирую GIF…';
 
-  Promise.all([
-    buildGif(
-      document.getElementById('mWindWrap'),
-      document.getElementById('mWindBuilding'),
-      document.getElementById('mWindFill'),
-      document.getElementById('mWindText'),
-      document.getElementById('mWindDownload'),
-      resultUrl, 'wind'
-    ),
-    buildGif(
-      document.getElementById('mShimmerWrap'),
-      document.getElementById('mShimmerBuilding'),
-      document.getElementById('mShimmerFill'),
-      document.getElementById('mShimmerText'),
-      document.getElementById('mShimmerDownload'),
-      resultUrl, 'shimmer'
-    )
-  ]);
+  buildGif(
+    document.getElementById('mWindWrap'),
+    document.getElementById('mWindBuilding'),
+    document.getElementById('mWindFill'),
+    document.getElementById('mWindText'),
+    document.getElementById('mWindDownload'),
+    resultUrl, 'wind'
+  );
 }
 // ════════════════════════════════════════════════════════════
 
@@ -1616,36 +1570,15 @@ function loadImageFromUrl(url) {
 // Рисуем один кадр «ветер» — синусоидальный горизонтальный сдвиг
 function drawWindFrame(ctx, img, W, H, phase, strength) {
   ctx.clearRect(0, 0, W, H);
-  // Рисуем по горизонтальным полосам со смещением
-  const sliceH = 4; // пикселей на полосу
+  const sliceH = 4;
   for (let y = 0; y < H; y += sliceH) {
-    const relY  = y / H; // 0..1
-    // Верхняя часть (волосы) качается сильнее, нижняя меньше
-    const wave  = Math.sin(phase + relY * Math.PI * 3) * strength * relY * (1 - relY * 0.5);
+    const relY = y / H;
+    const wave = Math.sin(phase + relY * Math.PI * 3) * strength * relY * (1 - relY * 0.5);
     ctx.drawImage(img, 0, y, W, sliceH, wave, y, W, sliceH);
   }
 }
 
-// Рисуем один кадр «блеск» — диагональная световая полоса
-function drawShimmerFrame(ctx, img, W, H, progress) {
-  ctx.clearRect(0, 0, W, H);
-  ctx.drawImage(img, 0, 0, W, H);
-  // Диагональная полоса света
-  const x = -W * 0.4 + (W + W * 0.8) * progress;
-  const grd = ctx.createLinearGradient(x - 80, 0, x + 80, H * 0.3);
-  grd.addColorStop(0,   'rgba(255,255,255,0)');
-  grd.addColorStop(0.4, 'rgba(255,255,255,0.18)');
-  grd.addColorStop(0.5, 'rgba(255,255,255,0.32)');
-  grd.addColorStop(0.6, 'rgba(255,255,255,0.18)');
-  grd.addColorStop(1,   'rgba(255,255,255,0)');
-  ctx.save();
-  ctx.transform(1, 0, -0.4, 1, 0, 0); // skew diagonal
-  ctx.fillStyle = grd;
-  ctx.fillRect(x - 80, -H * 0.2, 160, H * 1.5);
-  ctx.restore();
-}
-
-async function buildGif(wrapEl, buildingEl, fillEl, textEl, downloadEl, imgUrl, mode) {
+async function buildGif(wrapEl, buildingEl, fillEl, textEl, downloadEl, imgUrl) {
   buildingEl.style.display = 'flex';
   downloadEl.style.display = 'none';
   fillEl.style.width = '0%';
@@ -1659,138 +1592,93 @@ async function buildGif(wrapEl, buildingEl, fillEl, textEl, downloadEl, imgUrl, 
     return;
   }
 
-  // Размер: уменьшаем для скорости генерации GIF
-  const maxW = 320;
+  const maxW  = 320;
   const scale = Math.min(1, maxW / img.naturalWidth);
-  const W = Math.round(img.naturalWidth  * scale);
-  const H = Math.round(img.naturalHeight * scale);
+  const W     = Math.round(img.naturalWidth  * scale);
+  const H     = Math.round(img.naturalHeight * scale);
 
   const canvas = document.createElement('canvas');
   canvas.width  = W;
   canvas.height = H;
   const ctx = canvas.getContext('2d');
-
-  // Показываем preview canvas сразу
   canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
   wrapEl.appendChild(canvas);
   ctx.drawImage(img, 0, 0, W, H);
 
-  const FRAMES      = mode === 'wind' ? 24 : 20;
-  const FRAME_DELAY = mode === 'wind' ? 60  : 80; // ms
+  const FRAMES      = 24;
+  const FRAME_DELAY = 55; // ms — ~18fps, плавно
 
   textEl.textContent = 'создаю кадры…';
 
-  // Проверяем доступность GIF.js
   if (typeof GIF === 'undefined') {
-    // Fallback: просто анимируем canvas без экспорта в GIF
     textEl.textContent = '';
     buildingEl.style.display = 'none';
-    animateCanvasOnly(ctx, img, W, H, mode, canvas);
+    // Fallback: живая анимация на canvas
+    let frame = 0;
+    function tick() {
+      drawWindFrame(ctx, img, W, H, (frame / FRAMES) * Math.PI * 2, 6);
+      frame++;
+      requestAnimationFrame(tick);
+    }
+    tick();
     return;
   }
 
   const gif = new GIF({
-    workers: 2,
-    quality: 12,
-    width: W,
-    height: H,
+    workers: 2, quality: 10,
+    width: W, height: H,
     workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
   });
 
-  // Генерируем кадры
   for (let i = 0; i < FRAMES; i++) {
     fillEl.style.width = Math.round((i / FRAMES) * 70) + '%';
-    textEl.textContent = `кадр ${i+1} / ${FRAMES}`;
-
-    if (mode === 'wind') {
-      const phase    = (i / FRAMES) * Math.PI * 2;
-      const strength = 6;
-      drawWindFrame(ctx, img, W, H, phase, strength);
-    } else {
-      const progress = i / (FRAMES - 1);
-      drawShimmerFrame(ctx, img, W, H, progress);
-    }
-
-    // Небольшая пауза чтобы не блокировать UI
+    textEl.textContent = `кадр ${i + 1} / ${FRAMES}`;
+    drawWindFrame(ctx, img, W, H, (i / FRAMES) * Math.PI * 2, 6);
     await new Promise(r => setTimeout(r, 4));
-
     gif.addFrame(canvas, { copy: true, delay: FRAME_DELAY });
   }
 
   textEl.textContent = 'компилирую GIF…';
   fillEl.style.width = '80%';
 
-  gif.on('progress', p => {
-    fillEl.style.width = Math.round(80 + p * 20) + '%';
-  });
+  gif.on('progress', p => { fillEl.style.width = Math.round(80 + p * 20) + '%'; });
 
   gif.on('finished', blob => {
     const url = URL.createObjectURL(blob);
-    // Заменяем canvas на <img> с GIF
     const gifImg = document.createElement('img');
     gifImg.src   = url;
     gifImg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
     wrapEl.appendChild(gifImg);
-
     buildingEl.style.display = 'none';
     downloadEl.style.display = 'inline-block';
     downloadEl.href     = url;
-    downloadEl.download = mode + '_hair.gif';
+    downloadEl.download = 'hair_wind.gif';
   });
 
   gif.render();
 }
 
-// Fallback: просто анимируем canvas без GIF-файла
-function animateCanvasOnly(ctx, img, W, H, mode, canvas) {
-  let frame = 0;
-  function tick() {
-    if (mode === 'wind') {
-      const phase = (frame / 24) * Math.PI * 2;
-      drawWindFrame(ctx, img, W, H, phase, 6);
-    } else {
-      const progress = (frame % 20) / 19;
-      drawShimmerFrame(ctx, img, W, H, progress);
-    }
-    frame++;
-    requestAnimationFrame(tick);
-  }
-  tick();
-}
-
-// Главная функция — запускает оба GIF для заданного URL
+// Главная функция — запускает wind GIF для заданного URL
 async function buildAnimations(imageUrl) {
   const animSection = document.getElementById('animSection');
   animSection.classList.add('show');
 
   // Сброс
-  ['windWrap','shimmerWrap'].forEach(id => {
-    const w = document.getElementById(id);
-    // Убираем старые canvas/img кроме building-div
-    [...w.children].forEach(c => {
-      if (!c.classList.contains('anim-building')) c.remove();
-    });
-  });
+  const wrap = document.getElementById('windWrap');
+  [...wrap.children].forEach(c => { if (!c.classList.contains('anim-building')) c.remove(); });
+  document.getElementById('windBuilding').style.display = 'flex';
+  document.getElementById('windDownload').style.display = 'none';
+  document.getElementById('windFill').style.width = '0%';
+  document.getElementById('windText').textContent = 'генерирую GIF…';
 
-  // Запускаем параллельно
-  await Promise.all([
-    buildGif(
-      document.getElementById('windWrap'),
-      document.getElementById('windBuilding'),
-      document.getElementById('windFill'),
-      document.getElementById('windText'),
-      document.getElementById('windDownload'),
-      imageUrl, 'wind'
-    ),
-    buildGif(
-      document.getElementById('shimmerWrap'),
-      document.getElementById('shimmerBuilding'),
-      document.getElementById('shimmerFill'),
-      document.getElementById('shimmerText'),
-      document.getElementById('shimmerDownload'),
-      imageUrl, 'shimmer'
-    )
-  ]);
+  await buildGif(
+    document.getElementById('windWrap'),
+    document.getElementById('windBuilding'),
+    document.getElementById('windFill'),
+    document.getElementById('windText'),
+    document.getElementById('windDownload'),
+    imageUrl, 'wind'
+  );
 }
 
 // ════════════════════════════════════════════════════════════
