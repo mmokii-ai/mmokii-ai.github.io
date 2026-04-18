@@ -311,7 +311,22 @@
   }
   .history-header h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.08em; color: var(--muted); }
   .history-meta { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--muted); letter-spacing: 0.1em; margin-left: auto; }
+
+  /* Группировка по дням */
+  .history-day { margin-bottom: 2rem; }
+  .history-day-label {
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem;
+    letter-spacing: 0.1em; color: var(--muted);
+    padding-bottom: 0.6rem; margin-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: baseline; gap: 0.75rem;
+  }
+  .history-day-count {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    color: var(--border); letter-spacing: 0.05em;
+  }
   .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+
   .history-card { background: var(--surface); border: 1px solid var(--border); overflow: hidden; }
   .history-card-imgs { display: grid; gap: 1px; background: var(--border); }
   .history-card-imgs.layout-3 { grid-template-columns: 1fr 1fr 1fr; }
@@ -332,7 +347,7 @@
     border-top: 1px solid var(--border);
   }
   .history-card-meta { display: flex; flex-direction: column; gap: 0.15rem; }
-  .history-date { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); }
+  .history-time { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); }
   .history-mode-badge {
     font-family: 'DM Mono', monospace; font-size: 0.55rem; letter-spacing: 0.1em;
     text-transform: uppercase; padding: 1px 5px;
@@ -1154,42 +1169,120 @@ async function saveToHistory(record) {
 }
 
 function renderHistory(records) {
+  const container = document.getElementById('historyGrid');
+  container.innerHTML = '';
+
   if (!records.length) {
-    historyGrid.innerHTML = '<div class="history-empty">История пуста — запустите первую обработку</div>';
+    container.innerHTML = '<div class="history-empty">История пуста — запустите первую обработку</div>';
     return;
   }
-  historyGrid.innerHTML = '';
+
+  // Группируем по дням
+  const groups = {};
   records.forEach(r => {
-    const card = document.createElement('div');
-    card.className = 'history-card';
-
-    const isColor    = r.mode === 'color';
-    const resultUrl  = r.results?.[0];
-    const hasRef     = !isColor && r.refThumb;
-    const layout     = hasRef ? 'layout-3' : 'layout-2';
-    const colorDot   = isColor && r.color
-      ? `<div class="history-color-dot" style="background:${r.color}"></div>` : '';
-
-    card.innerHTML = `
-      <div class="history-card-imgs ${layout}">
-        <div class="history-img-slot" data-label="src">
-          <img src="${r.srcThumb || ''}" loading="lazy">
-        </div>
-        ${hasRef ? `<div class="history-img-slot" data-label="ref"><img src="${r.refThumb || ''}" loading="lazy"></div>` : ''}
-        ${resultUrl ? `<div class="history-img-slot" data-label="result"><img src="${resultUrl}" loading="lazy"></div>` : ''}
-      </div>
-      <div class="history-card-footer">
-        <div class="history-card-meta">
-          <span class="history-date">${new Date(r.date).toLocaleString('ru-RU')}</span>
-          <span class="history-mode-badge ${r.mode}">${isColor ? '🎨 Цвет' : '✂ Пересадка'}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:0.5rem">
-          ${colorDot}
-          ${resultUrl ? `<a class="btn-dl" href="${resultUrl}" target="_blank">↓</a>` : ''}
-        </div>
-      </div>`;
-    historyGrid.appendChild(card);
+    const d = new Date(r.date);
+    const key = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(r);
   });
+
+  Object.entries(groups).forEach(([dayLabel, items]) => {
+    const dayBlock = document.createElement('div');
+    dayBlock.className = 'history-day';
+
+    // Заголовок дня
+    const label = document.createElement('div');
+    label.className = 'history-day-label';
+    label.innerHTML = `${dayLabel} <span class="history-day-count">${items.length} ${items.length === 1 ? 'запуск' : items.length < 5 ? 'запуска' : 'запусков'}</span>`;
+    dayBlock.appendChild(label);
+
+    // Сетка карточек
+    const grid = document.createElement('div');
+    grid.className = 'history-grid';
+
+    items.forEach(r => {
+      const isColor   = r.mode === 'color';
+      const resultUrl = r.results?.[0];
+      const hasRef    = !isColor && r.refThumb;
+      const layout    = hasRef ? 'layout-3' : 'layout-2';
+      const colorDot  = isColor && r.color
+        ? `<div class="history-color-dot" style="background:${r.color}"></div>` : '';
+      const timeStr   = new Date(r.date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+
+      const card = document.createElement('div');
+      card.className = 'history-card';
+      card.innerHTML = `
+        <div class="history-card-imgs ${layout}">
+          <div class="history-img-slot" data-label="src">
+            <img src="${r.srcThumb || ''}" loading="lazy">
+          </div>
+          ${hasRef ? `<div class="history-img-slot" data-label="ref"><img src="${r.refThumb || ''}" loading="lazy"></div>` : ''}
+          ${resultUrl ? `<div class="history-img-slot" data-label="result"><img src="${resultUrl}" loading="lazy"></div>` : ''}
+        </div>
+        <div class="history-card-footer">
+          <div class="history-card-meta">
+            <span class="history-time">${timeStr}</span>
+            <span class="history-mode-badge ${r.mode}">${isColor ? '🎨 Цвет' : '✂ Пересадка'}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem">
+            ${colorDot}
+            ${resultUrl ? `<a class="btn-dl" href="${resultUrl}" target="_blank">↓ Скачать</a>` : ''}
+          </div>
+        </div>`;
+      grid.appendChild(card);
+    });
+
+    dayBlock.appendChild(grid);
+    container.appendChild(dayBlock);
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+//  СОХРАНЕНИЕ РЕЗУЛЬТАТА В GITHUB (постоянная ссылка)
+// ════════════════════════════════════════════════════════════
+async function saveResultToGitHub(tempUrl) {
+  log('Сохраняю результат в GitHub…');
+  // Скачиваем картинку через fetch
+  let blob;
+  try {
+    const res = await fetch(tempUrl);
+    if (!res.ok) throw new Error('fetch result ' + res.status);
+    blob = await res.blob();
+  } catch(e) {
+    throw new Error('Не удалось скачать результат: ' + e.message);
+  }
+
+  // Конвертируем blob → base64
+  const base64 = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+
+  const filename = `result_${Date.now()}.jpg`;
+  const folder   = GH_FOLDER + '/results';
+  const path     = `${folder}/${filename}`;
+  const apiUrl   = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${path}`;
+
+  const res = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: {
+      'Authorization': 'Bearer ' + getToken(),
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ message: `result ${filename}`, content: base64 })
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error('GitHub result upload failed ' + res.status + ': ' + err.slice(0, 100));
+  }
+
+  const permanentUrl = `https://raw.githubusercontent.com/${GH_USER}/${GH_REPO}/main/${path}`;
+  log('✓ Результат сохранён постоянно', 'ok');
+  return permanentUrl;
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1249,20 +1342,34 @@ runBtn.addEventListener('click', async () => {
     });
 
     setProgress(100);
-    setStatus('Готово!', false);
+    setStatus('Сохраняю результат…', true);
     log('Done!', 'ok');
 
     const resultUrls = renderResults(finalJson);
     resultSection.classList.add('show');
 
-    // 5. Save to history
+    // 5. Скачиваем результат и сохраняем в GitHub (постоянная ссылка)
+    const permanentUrls = [];
+    for (const tempUrl of resultUrls) {
+      try {
+        const pUrl = await saveResultToGitHub(tempUrl);
+        permanentUrls.push(pUrl);
+      } catch(e) {
+        log('Не удалось сохранить постоянно: ' + e.message, 'err');
+        permanentUrls.push(tempUrl); // fallback на временную
+      }
+    }
+
+    setStatus('Готово!', false);
+
+    // 6. Save to history with permanent URLs
     const record = {
       date:     new Date().toISOString(),
       mode:     currentMode,
       srcThumb: srcThumb,
       refThumb: currentMode === 'transfer' ? refThumb : null,
       color:    currentMode === 'color' ? selectedColor : null,
-      results:  resultUrls
+      results:  permanentUrls
     };
     await saveToHistory(record);
 
