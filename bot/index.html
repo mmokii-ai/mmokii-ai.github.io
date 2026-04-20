@@ -384,6 +384,135 @@ table.faq-tbl td:first-child {
 
 /* highlight при поиске */
 .faq-hl { background: #fff3a3; border-radius: 2px; padding: 0 1px; }
+
+/* ═══ ОТЧЁТ ═══ */
+.report-btn {
+  display: flex; align-items: center; gap: 7px;
+  background: rgba(255,255,255,.13);
+  border: 1px solid rgba(255,255,255,.25);
+  color: white; padding: 5px 13px; border-radius: 20px;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  transition: background .18s; user-select: none;
+  opacity: .4; pointer-events: none;
+}
+.report-btn.active { opacity: 1; pointer-events: all; }
+.report-btn:hover { background: rgba(255,255,255,.22); }
+
+.rpt-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(10,25,47,.55); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .22s;
+}
+.rpt-overlay.open { opacity: 1; pointer-events: all; }
+.rpt-modal {
+  background: white; border-radius: 18px;
+  width: min(980px, 96vw); max-height: 88vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0,0,0,.22);
+  transform: translateY(22px) scale(.97);
+  transition: transform .24s; overflow: hidden;
+}
+.rpt-overlay.open .rpt-modal { transform: none; }
+.rpt-head {
+  padding: 16px 22px 12px; border-bottom: 1px solid #eef1f5;
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.rpt-head-icon {
+  width: 36px; height: 36px; background: #065A82; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.rpt-title { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+.rpt-sub   { font-size: 12px; color: #888; margin-top: 1px; }
+.rpt-close {
+  margin-left: auto; width: 30px; height: 30px;
+  background: #f0f2f5; border: none; border-radius: 8px;
+  cursor: pointer; font-size: 16px; color: #555;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.rpt-close:hover { background: #e0e4ea; }
+.rpt-body { flex: 1; overflow-y: auto; padding: 20px 22px; }
+
+/* Графики */
+.rpt-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+@media (max-width: 640px) { .rpt-charts { grid-template-columns: 1fr; } }
+.rpt-chart-box {
+  background: #f7f9fc; border-radius: 12px; padding: 16px;
+}
+.rpt-chart-title { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 14px; }
+
+/* Пончик */
+.donut-wrap { display: flex; align-items: center; gap: 18px; }
+.donut-legend { display: flex; flex-direction: column; gap: 8px; }
+.legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #555; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* Бар-чарт */
+.bar-chart { display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+.bar-label { width: 110px; color: #555; flex-shrink: 0; text-align: right; }
+.bar-track { flex: 1; background: #e8ecf0; border-radius: 4px; height: 20px; overflow: hidden; }
+.bar-fill  { height: 100%; border-radius: 4px; transition: width .6s ease; display: flex; align-items: center; padding-left: 8px; }
+.bar-val   { font-size: 11px; font-weight: 600; color: white; white-space: nowrap; }
+
+/* Сводка */
+.rpt-summary { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 24px; }
+@media (max-width: 640px) { .rpt-summary { grid-template-columns: 1fr; } }
+.summary-card {
+  border-radius: 10px; padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.summary-card.ai       { background: #e8f0fe; }
+.summary-card.support  { background: #e8f8ef; }
+.summary-card.closed   { background: #fdecea; }
+.summary-count { font-size: 28px; font-weight: 700; }
+.summary-card.ai .summary-count      { color: #065A82; }
+.summary-card.support .summary-count { color: #1e8449; }
+.summary-card.closed .summary-count  { color: #c0392b; }
+.summary-label { font-size: 12px; color: #666; }
+.summary-time  { font-size: 11px; color: #999; margin-top: 2px; }
+
+/* Таблица тикетов */
+.rpt-table-title { font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 12px; }
+.rpt-tbl-wrap { overflow-x: auto; }
+table.rpt-tbl {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+}
+table.rpt-tbl thead th {
+  text-align: left; padding: 9px 12px;
+  background: #f7f9fc; color: #555; font-size: 11px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
+  border-bottom: 2px solid #eef1f5; white-space: nowrap;
+}
+table.rpt-tbl tbody tr { border-bottom: 1px solid #f0f2f5; transition: background .1s; }
+table.rpt-tbl tbody tr:hover { background: #f7f9ff; }
+table.rpt-tbl tbody tr:last-child { border-bottom: none; }
+table.rpt-tbl td { padding: 10px 12px; vertical-align: top; line-height: 1.4; color: #333; }
+table.rpt-tbl td.q-col { max-width: 220px; }
+table.rpt-tbl td.a-col { max-width: 240px; color: #555; }
+.rpt-status-badge {
+  display: inline-block; font-size: 10px; padding: 2px 8px;
+  border-radius: 8px; font-weight: 600; white-space: nowrap;
+}
+.rpt-status-badge.ai_resolved      { background: #e8f0fe; color: #065A82; }
+.rpt-status-badge.support_resolved { background: #e8f8ef; color: #1e8449; }
+.rpt-status-badge.closed_by_user   { background: #fdecea; color: #c0392b; }
+.rpt-duration { font-size: 11px; color: #888; white-space: nowrap; }
+.rpt-empty { text-align: center; padding: 40px; color: #bbb; font-style: italic; font-size: 14px; }
+.rpt-loader { text-align: center; padding: 50px; color: #888; font-size: 14px; }
+
+.rpt-foot {
+  padding: 10px 22px; border-top: 1px solid #eef1f5;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px; color: #aaa; flex-shrink: 0;
+}
+.rpt-refresh {
+  font-size: 12px; color: #065A82; background: none; border: none;
+  cursor: pointer; padding: 3px 8px; border-radius: 6px;
+  transition: background .15s; font-weight: 500;
+}
+.rpt-refresh:hover { background: #e8f0fe; }
 </style>
 </head>
 <body>
@@ -394,6 +523,12 @@ table.faq-tbl td:first-child {
     <h1>Support Bot</h1>
     <p>Демо-страница виджета поддержки</p>
   </div>
+  <button class="report-btn" id="reportBtn" onclick="rptOpen()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+    </svg>
+    Отчёт
+  </button>
   <button class="header-faq-link" onclick="faqOpen()">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
       <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
@@ -434,6 +569,31 @@ table.faq-tbl td:first-child {
       <button class="faq-refresh-btn" id="faqRefreshBtn" onclick="faqLoad(true)">&#x21BB; Обновить</button>
     </div>
 
+  </div>
+</div>
+
+<!-- ═══ ОТЧЁТ МОДАЛКА ═══ -->
+<div class="rpt-overlay" id="rptOverlay" onclick="rptOverlayClick(event)">
+  <div class="rpt-modal">
+    <div class="rpt-head">
+      <div class="rpt-head-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+      </div>
+      <div>
+        <div class="rpt-title">Отчёт по тикетам</div>
+        <div class="rpt-sub" id="rptSub">За всё время</div>
+      </div>
+      <button class="rpt-close" onclick="rptClose()">&#x2715;</button>
+    </div>
+    <div class="rpt-body" id="rptBody">
+      <div class="rpt-loader">Загрузка данных…</div>
+    </div>
+    <div class="rpt-foot">
+      <span id="rptFootTime"></span>
+      <button class="rpt-refresh" onclick="rptLoad()">&#x21BB; Обновить</button>
+    </div>
   </div>
 </div>
 
@@ -505,7 +665,7 @@ table.faq-tbl td:first-child {
 // ══════════════════════════════════════════════════════════════
 // КОНФИГ — Railway URL
 // ══════════════════════════════════════════════════════════════
-const API = (window.BACKEND_URL || 'https://isales-bot-production.up.railway.app/').replace(/\/$/, '');
+const API = (window.BACKEND_URL || 'https://isales-bot-production.up.railway.app').replace(/\/$/, '');
 const WSB = API.replace(/^https/, 'wss').replace(/^http/, 'ws');
 
 // ══════════════════════════════════════════════════════════════
@@ -565,7 +725,7 @@ function uConnectWs() {
       console.log('User WS:', ev.type, ev);
       if (ev.type === 'support_reply') {
         uAppend('support', ev.text, ev.time, 'Специалист поддержки');
-        uShowFeedback(ev.ticket_id, false);
+        uShowFeedback(ev.ticket_id, 'support');
         uEnsureCloseBtn(ev.ticket_id);
       } else if (ev.type === 'ticket_closed') {
         uAppend('system', ev.text || 'Тикет закрыт.');
@@ -589,8 +749,8 @@ function uAppend(role, text, time, roleLabel) {
 }
 
 // ── Показать кнопки фидбека ──
-function uShowFeedback(ticketId, isBot) {
-  // Удаляем старые кнопки фидбека если есть
+function uShowFeedback(ticketId, source) {
+  // source: "ai" — ответ бота, "support" — ответ специалиста
   const old = $('fb_' + ticketId);
   if (old) old.remove();
 
@@ -599,42 +759,41 @@ function uShowFeedback(ticketId, isBot) {
   d.className = 'msg bot';
   d.id = 'fb_' + ticketId;
 
-  if (isBot) {
-    // Ответ от бота — кнопки: Помогло / Не помогло / Закрыть
-    d.innerHTML = 'Помогло?'
+  if (source === 'ai') {
+    d.innerHTML = 'Ответ помог?'
       + '<div class="fbbtns">'
-      + '<button class="fbbtn yes" onclick="uFeedback(\'' + ticketId + '\',true)">✅ Да, решено</button>'
-      + '<button class="fbbtn no"  onclick="uFeedback(\'' + ticketId + '\',false)">❌ Не помогло</button>'
-      + '<button class="fbbtn close" onclick="uClose(\'' + ticketId + '\')">✖ Закрыть</button>'
+      + '<button class="fbbtn yes" onclick="uFeedback(\'' + ticketId + '\',true,\'ai\')">&#x2705; Да, принять</button>'
+      + '<button class="fbbtn no"  onclick="uFeedback(\'' + ticketId + '\',false,\'ai\')">&#x274C; Нет, нужен специалист</button>'
       + '</div>';
   } else {
-    // Ответ от специалиста — кнопки: Решено / Нужна ещё помощь / Закрыть
     d.innerHTML = 'Вопрос решён?'
       + '<div class="fbbtns">'
-      + '<button class="fbbtn yes" onclick="uFeedback(\'' + ticketId + '\',true)">✅ Да, решено</button>'
-      + '<button class="fbbtn no"  onclick="uFeedback(\'' + ticketId + '\',false)">❌ Нужна помощь</button>'
-      + '<button class="fbbtn close" onclick="uClose(\'' + ticketId + '\')">✖ Закрыть</button>'
+      + '<button class="fbbtn yes" onclick="uFeedback(\'' + ticketId + '\',true,\'support\')">&#x2705; Да, принять</button>'
+      + '<button class="fbbtn no"  onclick="uFeedback(\'' + ticketId + '\',false,\'support\')">&#x274C; Нет, закрыть</button>'
       + '</div>';
   }
   box.appendChild(d);
   scrollBot(box);
 }
 
-async function uFeedback(ticketId, resolved) {
+async function uFeedback(ticketId, resolved, source) {
   const fb = $('fb_' + ticketId);
   if (fb) fb.remove();
   try {
     const r = await fetch(API + '/widget/feedback', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({session_id: uSid, ticket_id: ticketId, resolved})
+      body: JSON.stringify({session_id: uSid, ticket_id: ticketId, resolved, source})
     });
     const d = await r.json();
     uAppend('bot', d.reply);
     if (resolved) {
       uSetResolved();
+    } else if (source === 'support') {
+      // Отказ от ответа поддержки = закрытие тикета
+      uSetIdle();
     }
-    // Если rejected — ждём ответа специалиста, ввод не блокируем
+    // Отказ от AI → ждём специалиста, ввод не блокируем
   } catch(e) {
     uAppend('system', 'Ошибка. Попробуйте ещё раз.');
   }
@@ -719,7 +878,7 @@ async function sendUser() {
     uTicketId = d.ticket_id || uTicketId;
 
     if (d.show_feedback && d.ticket_id) {
-      uShowFeedback(d.ticket_id, true);
+      uShowFeedback(d.ticket_id, 'ai');
     }
 
     // Если эскалировали к специалисту — показываем кнопку закрыть
@@ -762,6 +921,7 @@ async function doLogin() {
       $('sLogin').style.display = 'none';
       $('sMain').style.display  = 'flex';
       $('sDot').classList.add('on');
+      rptActivate();
       sConnectWs();
       sLoadTickets();
     } else {
@@ -1287,6 +1447,220 @@ function faqRender(rows) {
 
 function faqFilter() {
   if (faqData.length) faqRender(faqData);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ОТЧЁТ
+// ══════════════════════════════════════════════════════════════
+
+const STATUS_LABELS = {
+  ai_resolved:      'AI ответил',
+  support_resolved: 'Поддержка ответила',
+  closed_by_user:   'Пользователь закрыл',
+};
+const STATUS_COLORS = {
+  ai_resolved:      '#185FA5',
+  support_resolved: '#1e8449',
+  closed_by_user:   '#c0392b',
+};
+
+function rptOpen() {
+  $('rptOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  rptLoad();
+}
+function rptClose() {
+  $('rptOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function rptOverlayClick(e) {
+  if (e.target === $('rptOverlay')) rptClose();
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('rptOverlay').classList.contains('open')) rptClose();
+});
+
+// Активируем кнопку отчёта только когда поддержка вошла в систему
+function rptActivate() {
+  const btn = $('reportBtn');
+  if (btn) btn.classList.add('active');
+}
+
+async function rptLoad() {
+  $('rptBody').innerHTML = '<div class="rpt-loader">Загрузка данных из системы…</div>';
+  try {
+    const r = await fetch(API + '/support/report');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    rptRender(data.tickets || []);
+    $('rptFootTime').textContent = 'Обновлено: ' + new Date().toLocaleTimeString('ru', {hour:'2-digit',minute:'2-digit'});
+    $('rptSub').textContent = 'За всё время · ' + (data.total || 0) + ' тикетов';
+  } catch(e) {
+    $('rptBody').innerHTML = '<div class="rpt-empty">&#x26A0;&#xFE0F; Не удалось загрузить данные.<br><span style="font-size:12px;color:#aaa">' + esc(e.message) + '</span></div>';
+    console.error('rptLoad:', e);
+  }
+}
+
+function rptParseDt(str) {
+  if (!str) return null;
+  // Формат: "dd.mm.yyyy HH:MM"
+  const m = str.match(/(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})/);
+  if (!m) return null;
+  return new Date(+m[3], +m[2]-1, +m[1], +m[4], +m[5]);
+}
+
+function rptDuration(created, updated) {
+  const a = rptParseDt(created), b = rptParseDt(updated);
+  if (!a || !b) return '—';
+  const mins = Math.round((b - a) / 60000);
+  if (mins < 1)  return '< 1 мин';
+  if (mins < 60) return mins + ' мин';
+  const h = Math.floor(mins/60), m = mins % 60;
+  return h + ' ч ' + (m ? m + ' мин' : '');
+}
+
+function rptRender(tickets) {
+  if (!tickets.length) {
+    $('rptBody').innerHTML = '<div class="rpt-empty">Нет закрытых тикетов</div>';
+    return;
+  }
+
+  // Статистика
+  const counts = {ai_resolved:0, support_resolved:0, closed_by_user:0};
+  const mins   = {ai_resolved:0, support_resolved:0, closed_by_user:0};
+
+  tickets.forEach(t => {
+    const s = t.status;
+    if (counts[s] !== undefined) {
+      counts[s]++;
+      const a = rptParseDt(t.created_at), b = rptParseDt(t.updated_at);
+      if (a && b) mins[s] += (b - a) / 60000;
+    }
+  });
+
+  const total = tickets.length;
+
+  // Сводные карточки
+  const summaryHtml = `
+    <div class="rpt-summary">
+      <div class="summary-card ai">
+        <div class="summary-count">${counts.ai_resolved}</div>
+        <div class="summary-label">AI ответил</div>
+        <div class="summary-time">${counts.ai_resolved ? 'Ср. время: ' + Math.round(mins.ai_resolved / counts.ai_resolved) + ' мин' : '—'}</div>
+      </div>
+      <div class="summary-card support">
+        <div class="summary-count">${counts.support_resolved}</div>
+        <div class="summary-label">Поддержка ответила</div>
+        <div class="summary-time">${counts.support_resolved ? 'Ср. время: ' + Math.round(mins.support_resolved / counts.support_resolved) + ' мин' : '—'}</div>
+      </div>
+      <div class="summary-card closed">
+        <div class="summary-count">${counts.closed_by_user}</div>
+        <div class="summary-label">Пользователь закрыл</div>
+        <div class="summary-time">${counts.closed_by_user ? 'Ср. время: ' + Math.round(mins.closed_by_user / counts.closed_by_user) + ' мин' : '—'}</div>
+      </div>
+    </div>`;
+
+  // Пончик (SVG)
+  const donutSvg = rptDonut(counts, total);
+
+  // Бар-чарт времени
+  const maxMins = Math.max(
+    counts.ai_resolved      ? mins.ai_resolved / counts.ai_resolved : 0,
+    counts.support_resolved ? mins.support_resolved / counts.support_resolved : 0,
+    counts.closed_by_user   ? mins.closed_by_user / counts.closed_by_user : 0,
+    1
+  );
+  const barHtml = ['ai_resolved','support_resolved','closed_by_user'].map(s => {
+    const avg = counts[s] ? Math.round(mins[s] / counts[s]) : 0;
+    const pct  = Math.round((avg / maxMins) * 100);
+    return `<div class="bar-row">
+      <div class="bar-label">${STATUS_LABELS[s]}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${pct}%;background:${STATUS_COLORS[s]}">
+          <span class="bar-val">${avg ? avg + ' мин' : '—'}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Таблица тикетов
+  const rowsHtml = tickets.map(t => {
+    const dur  = rptDuration(t.created_at, t.updated_at);
+    const stat = t.status || '';
+    const label = STATUS_LABELS[stat] || stat;
+    const ans  = t.accepted_answer
+      ? (t.accepted_answer.length > 120 ? t.accepted_answer.slice(0,120) + '…' : t.accepted_answer)
+      : '<span style="color:#bbb;font-style:italic">—</span>';
+    return `<tr>
+      <td style="font-size:11px;color:#999;white-space:nowrap">${esc(t.ticket_id)}</td>
+      <td class="q-col">${esc(t.question)}</td>
+      <td class="a-col">${esc(t.accepted_answer ? ans : '')|| '<span style="color:#bbb;font-style:italic">—</span>'}</td>
+      <td><span class="rpt-status-badge ${stat}">${label}</span></td>
+      <td class="rpt-duration">${esc(t.created_at)}</td>
+      <td class="rpt-duration">${dur}</td>
+    </tr>`;
+  }).join('');
+
+  $('rptBody').innerHTML = `
+    ${summaryHtml}
+    <div class="rpt-charts">
+      <div class="rpt-chart-box">
+        <div class="rpt-chart-title">Распределение по типу закрытия</div>
+        ${donutSvg}
+      </div>
+      <div class="rpt-chart-box">
+        <div class="rpt-chart-title">Среднее время жизни тикета</div>
+        <div class="bar-chart">${barHtml}</div>
+      </div>
+    </div>
+    <div class="rpt-table-title">Все тикеты (${total})</div>
+    <div class="rpt-tbl-wrap">
+      <table class="rpt-tbl">
+        <thead><tr>
+          <th>ID</th><th>Вопрос</th><th>Принятый ответ</th>
+          <th>Статус</th><th>Начало</th><th>Время жизни</th>
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>`;
+}
+
+function rptDonut(counts, total) {
+  if (!total) return '<div style="text-align:center;color:#bbb;font-size:13px;padding:20px">Нет данных</div>';
+  const keys   = ['ai_resolved','support_resolved','closed_by_user'];
+  const colors = keys.map(k => STATUS_COLORS[k]);
+  const vals   = keys.map(k => counts[k]);
+
+  const cx = 64, cy = 64, r = 52, stroke = 22;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+  const slices = vals.map((v, i) => {
+    const pct  = total ? v / total : 0;
+    const dash = pct * circ;
+    const el   = `<circle cx="${cx}" cy="${cy}" r="${r}"
+      fill="none" stroke="${colors[i]}" stroke-width="${stroke}"
+      stroke-dasharray="${dash.toFixed(2)} ${(circ - dash).toFixed(2)}"
+      stroke-dashoffset="${(-offset).toFixed(2)}"
+      transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset += dash;
+    return el;
+  });
+
+  const legendItems = keys.map((k,i) => `
+    <div class="legend-item">
+      <span class="legend-dot" style="background:${colors[i]}"></span>
+      <span>${STATUS_LABELS[k]}: <strong>${vals[i]}</strong></span>
+    </div>`).join('');
+
+  return `<div class="donut-wrap">
+    <svg width="128" height="128" viewBox="0 0 128 128" style="flex-shrink:0">
+      ${slices.join('')}
+      <text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="20" font-weight="700" fill="#1a1a2e">${total}</text>
+      <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="11" fill="#888">тикетов</text>
+    </svg>
+    <div class="donut-legend">${legendItems}</div>
+  </div>`;
 }
 
 // ══════════════════════════════════════════════════════════════
