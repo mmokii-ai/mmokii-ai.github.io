@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>iSales Support — Демо</title>
+<title>Support Bot — Демо</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -391,7 +391,7 @@ table.faq-tbl td:first-child {
 <div class="header">
   <div class="logo">iS</div>
   <div>
-    <h1>iSales Support</h1>
+    <h1>Support Bot</h1>
     <p>Демо-страница виджета поддержки</p>
   </div>
   <button class="header-faq-link" onclick="faqOpen()">
@@ -414,7 +414,7 @@ table.faq-tbl td:first-child {
         </svg>
       </div>
       <div>
-        <div class="faq-modal-title">База знаний iSales</div>
+        <div class="faq-modal-title">База знаний</div>
         <div class="faq-modal-sub">Часто задаваемые вопросы и ответы поддержки</div>
       </div>
       <button class="faq-close-btn" onclick="faqClose()">&#x2715;</button>
@@ -505,7 +505,7 @@ table.faq-tbl td:first-child {
 // ══════════════════════════════════════════════════════════════
 // КОНФИГ — замените на ваш Railway URL
 // ══════════════════════════════════════════════════════════════
-const API = (window.BACKEND_URL || 'https://isales-bot-production.up.railway.app/').replace(/\/$/, '');
+const API = (window.BACKEND_URL || 'https://YOUR-RAILWAY-URL.up.railway.app').replace(/\/$/, '');
 const WSB = API.replace(/^https/, 'wss').replace(/^http/, 'ws');
 
 // ══════════════════════════════════════════════════════════════
@@ -565,7 +565,8 @@ function uConnectWs() {
       console.log('User WS:', ev.type, ev);
       if (ev.type === 'support_reply') {
         uAppend('support', ev.text, ev.time, 'Специалист поддержки');
-        uShowFeedback(ev.ticket_id, false); // ещё раз показываем кнопки
+        uShowFeedback(ev.ticket_id, false);
+        uEnsureCloseBtn(ev.ticket_id);
       } else if (ev.type === 'ticket_closed') {
         uAppend('system', ev.text || 'Тикет закрыт.');
         uSetResolved();
@@ -642,6 +643,8 @@ async function uFeedback(ticketId, resolved) {
 async function uClose(ticketId) {
   const fb = $('fb_' + ticketId);
   if (fb) fb.remove();
+  const cb = $('uclosebtn_' + ticketId);
+  if (cb) cb.remove();
   try {
     await fetch(API + '/widget/close', {
       method: 'POST',
@@ -653,6 +656,17 @@ async function uClose(ticketId) {
   } catch(e) {
     uAppend('system', 'Ошибка закрытия.');
   }
+}
+
+function uEnsureCloseBtn(ticketId) {
+  if ($('uclosebtn_' + ticketId)) return;
+  const box = $('uMsgs');
+  const d   = document.createElement('div');
+  d.className = 'msg bot';
+  d.id = 'uclosebtn_' + ticketId;
+  d.innerHTML = '<div class="fbbtns"><button class="fbbtn close" onclick="uClose(\'' + ticketId + '\')">&#x2716; Закрыть тикет</button></div>';
+  box.appendChild(d);
+  scrollBot(box);
 }
 
 function uSetResolved() {
@@ -710,13 +724,7 @@ async function sendUser() {
 
     // Если эскалировали к специалисту — показываем кнопку закрыть
     if (d.state === 'waiting_support') {
-      const box = $('uMsgs');
-      const cl  = document.createElement('div');
-      cl.className = 'msg bot';
-      cl.id = 'closebtn_' + d.ticket_id;
-      cl.innerHTML = '<div class="fbbtns"><button class="fbbtn close" onclick="uClose(\'' + d.ticket_id + '\')">✖ Закрыть тикет</button></div>';
-      box.appendChild(cl);
-      scrollBot(box);
+      uEnsureCloseBtn(d.ticket_id);
     }
   } catch(e) {
     uAppend('system', 'Нет соединения. Попробуйте ещё раз.');
@@ -1083,7 +1091,7 @@ function onSupKey(e) {
 
 function sNotify(msg) {
   if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-    new Notification('iSales Support', {body: msg, icon: ''});
+    new Notification('Support Bot', {body: msg, icon: ''});
   }
   console.log('Support notify:', msg);
 }
