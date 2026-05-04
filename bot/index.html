@@ -664,8 +664,8 @@ table.rpt-tbl td.a-col { max-width: 240px; color: #555; }
 <script>
 // ══════════════════════════════════════════════════════════════
 // КОНФИГ — Railway URL
-// ══════════════════════════════════════════════════════════════
-const API = (window.BACKEND_URL || 'https://isales-bot-production.up.railway.app').replace(/\/$/, '');
+// ═════════════════════════https://isales-bot-production.up.railway.app
+const API = (window.BACKEND_URL || 'https://isales-bot.onrender.com/').replace(/\/$/, '');
 const WSB = API.replace(/^https/, 'wss').replace(/^http/, 'ws');
 
 // ══════════════════════════════════════════════════════════════
@@ -1671,6 +1671,26 @@ document.addEventListener('DOMContentLoaded', () => {
     Notification.requestPermission();
   }
   initUser();
+});
+// === AUTO LOGIN SUPPORT (без пароля) ===
+window.addEventListener('load', () => {
+  const login = document.getElementById('sLogin');
+  const main  = document.getElementById('sMain');
+  const dot   = document.getElementById('sDot');
+
+  // скрываем блок логина
+  if (login) login.style.display = 'none';
+
+  // показываем интерфейс поддержки
+  if (main) main.style.display = 'flex';
+
+  // включаем "онлайн" индикатор
+  if (dot) dot.classList.add('on');
+
+  // запускаем всё как после успешного логина
+  if (typeof rptActivate === 'function') rptActivate();
+  if (typeof sConnectWs === 'function') sConnectWs();
+  if (typeof sLoadTickets === 'function') sLoadTickets();
 });
 </script>
 </body>
